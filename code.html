@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudCraft - استضافة ماين كرافت مجانية</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5a4bd1;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --text: #e0e0e0;
+            --text-light: #a0a0b8;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+            --bedrock: #44bd32;
+            --gradient: linear-gradient(135deg, #6c5ce7, #00cec9);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .bg-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; overflow: hidden; pointer-events: none;
+        }
+        .bg-animation .cube {
+            position: absolute; width: 40px; height: 40px;
+            background: rgba(108, 92, 231, 0.05);
+            border: 1px solid rgba(108, 92, 231, 0.1);
+            animation: float 20s infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 100;
+            background: rgba(10, 10, 26, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+        }
+        .nav-container {
+            max-width: 1200px; margin: 0 auto; padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-size: 1.8rem; font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .logo-icon {
+            width: 35px; height: 35px;
+            background: var(--gradient);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            color: var(--text-light); text-decoration: none; font-size: 0.95rem;
+            transition: color 0.3s; position: relative;
+        }
+        .nav-links a:hover, .nav-links a.active { color: #fff; }
+        .nav-links a::after {
+            content: ''; position: absolute; bottom: -4px; left: 0;
+            width: 0; height: 2px; background: var(--gradient); transition: width 0.3s;
+        }
+        .nav-links a:hover::after, .nav-links a.active::after { width: 100%; }
+        .auth-buttons { display: flex; gap: 1rem; }
+        .btn {
+            padding: 0.6rem 1.5rem; border: none; border-radius: 8px;
+            font-size: 0.9rem; cursor: pointer; transition: all 0.3s;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-outline {
+            background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-outline:hover {
+            border-color: var(--primary); background: rgba(108, 92, 231, 0.1);
+        }
+        .btn-primary {
+            background: var(--gradient); color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+        }
+        .btn-lg { padding: 0.8rem 2rem; font-size: 1.1rem; }
+        .hero {
+            position: relative; z-index: 1;
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            padding: 2rem;
+        }
+        .hero-badge {
+            background: rgba(108, 92, 231, 0.15);
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            color: var(--secondary); padding: 0.4rem 1.2rem;
+            border-radius: 50px; font-size: 0.85rem; margin-bottom: 1.5rem;
+        }
+        .hero h1 { font-size: 3.5rem; font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
+        .hero h1 span {
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem; color: var(--text-light);
+            max-width: 600px; margin-bottom: 2rem; line-height: 1.6;
+        }
+        .hero-actions {
+            display: flex; gap: 1rem; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 4rem;
+        }
+        .stats-bar { display: flex; gap: 4rem; flex-wrap: wrap; justify-content: center; }
+        .stat-item { text-align: center; }
+        .stat-item .number {
+            font-size: 2.2rem; font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .stat-item .label { font-size: 0.9rem; color: var(--text-light); }
+        .features {
+            position: relative; z-index: 1; max-width: 1200px;
+            margin: 0 auto; padding: 6rem 2rem;
+        }
+        .section-title {
+            text-align: center; font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;
+        }
+        .section-sub {
+            text-align: center; color: var(--text-light);
+            font-size: 1.1rem; margin-bottom: 4rem;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 2rem; transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0;
+            width: 100%; height: 3px; background: var(--gradient);
+            transform: scaleX(0); transform-origin: left; transition: transform 0.4s;
+        }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(108, 92, 231, 0.3);
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.15);
+        }
+        .feature-icon {
+            width: 50px; height: 50px;
+            background: rgba(108, 92, 231, 0.15);
+            border-radius: 12px; display: flex; align-items: center;
+            justify-content: center; margin-bottom: 1.5rem; font-size: 1.5rem;
+        }
+        .feature-card h3 { font-size: 1.2rem; margin-bottom: 0.8rem; }
+        .feature-card p { color: var(--text-light); font-size: 0.95rem; line-height: 1.6; }
+        .pricing {
+            position: relative; z-index: 1; max-width: 1200px;
+            margin: 0 auto; padding: 6rem 2rem;
+        }
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 3rem 2rem;
+            text-align: center; transition: all 0.3s; position: relative;
+        }
+        .pricing-card.featured {
+            border: 1px solid var(--primary); transform: scale(1.05);
+        }
+        .pricing-card.featured .badge {
+            position: absolute; top: -12px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient); color: #fff;
+            padding: 0.3rem 1.5rem; border-radius: 50px; font-size: 0.8rem; font-weight: 600;
+        }
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(108, 92, 231, 0.3);
+            box-shadow: 0 8px 32px rgba(108, 92, 231, 0.15);
+        }
+        .pricing-card.featured:hover { transform: scale(1.05) translateY(-8px); }
+        .plan-name { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .plan-price { font-size: 3rem; font-weight: 800; margin: 1.5rem 0; }
+        .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text-light); }
+        .plan-features { list-style: none; margin: 2rem 0; text-align: right; }
+        .plan-features li {
+            padding: 0.7rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .plan-features li::before { content: '✓'; color: var(--success); font-weight: bold; }
+        .dashboard {
+            position: relative; z-index: 1; padding: 100px 2rem 2rem;
+            max-width: 1200px; margin: 0 auto;
+        }
+        .dashboard-header {
+            display: flex; justify-content: space-between;
+            align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+        }
+        .dashboard-header h2 { font-size: 1.8rem; }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem; margin-bottom: 2rem;
+        }
+        .server-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px; padding: 1.5rem; transition: all 0.3s;
+        }
+        .server-card:hover {
+            border-color: rgba(108, 92, 231, 0.3); transform: translateY(-3px);
+        }
+        .server-card .top {
+            display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;
+        }
+        .server-name { font-size: 1.1rem; font-weight: 700; }
+        .server-status {
+            padding: 0.2rem 0.8rem; border-radius: 50px; font-size: 0.75rem; font-weight: 600;
+        }
+        .server-status.online { background: rgba(0, 184, 148, 0.15); color: var(--success); }
+        .server-status.offline { background: rgba(225, 112, 85, 0.15); color: var(--danger); }
+        .server-info {
+            display: flex; gap: 1.5rem; margin: 1rem 0;
+            font-size: 0.85rem; color: var(--text-light);
+        }
+        .server-actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+        .server-actions .btn { padding: 0.4rem 1rem; font-size: 0.8rem; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .console {
+            background: #0d0d1a;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 1rem;
+            font-family: 'Consolas', monospace; font-size: 0.85rem;
+            height: 300px; overflow-y: auto; margin-top: 1.5rem;
+        }
+        .console .line { padding: 2px 0; }
+        .console .line .time { color: var(--text-light); margin-left: 0.5rem; }
+        .console .line .info { color: var(--secondary); }
+        .console .line .warn { color: var(--warning); }
+        .console .line .error { color: var(--danger); }
+        .console-input { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+        .console-input input {
+            flex: 1; background: #0d0d1a;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 0.7rem 1rem;
+            color: #fff; font-family: 'Consolas', monospace; direction: ltr;
+        }
+        .console-input input:focus { outline: none; border-color: var(--primary); }
+        .create-server {
+            position: relative; z-index: 1; max-width: 700px;
+            margin: 100px auto 2rem; padding: 0 2rem;
+        }
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px; padding: 2.5rem;
+        }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.95rem;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.8rem 1rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: #fff; font-size: 0.95rem; transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--primary);
+        }
+        .form-group select option { background: var(--bg-dark); color: #fff; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .slide-container {
+            display: flex; align-items: center; gap: 1rem;
+        }
+        .slide-container input[type="range"] {
+            flex: 1; height: 6px; -webkit-appearance: none;
+            background: rgba(255,255,255,0.1); border-radius: 3px;
+        }
+        .slide-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 20px; height: 20px;
+            background: var(--gradient); border-radius: 50%; cursor: pointer;
+        }
+        .slide-value {
+            min-width: 60px; text-align: center; font-weight: 700; color: var(--secondary);
+        }
+        footer {
+            position: relative; z-index: 1;
+            background: rgba(10, 10, 26, 0.8);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding: 3rem 2rem; text-align: center;
+        }
+        footer p { color: var(--text-light); font-size: 0.9rem; }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2.2rem; }
+            .stats-bar { gap: 2rem; }
+            .pricing-card.featured { transform: none; }
+            .pricing-card.featured:hover { transform: translateY(-8px); }
+            .form-row { grid-template-columns: 1fr; }
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+        .toggle-switch { position: relative; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.1); border-radius: 26px; transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: ''; position: absolute; width: 20px; height: 20px;
+            left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: var(--success); }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(24px); }
+        .platform-tabs {
+            display: flex; justify-content: center; gap: 0.5rem; margin-bottom: 2rem; flex-wrap: wrap;
+        }
+        .platform-tab {
+            padding: 0.6rem 1.8rem; border-radius: 50px;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer; transition: all 0.3s; font-size: 0.9rem; font-weight: 600;
+        }
+        .platform-tab.java { color: #e84118; border-color: rgba(232, 65, 24, 0.3); }
+        .platform-tab.java.active, .platform-tab.java:hover {
+            background: rgba(232, 65, 24, 0.15); border-color: #e84118;
+        }
+        .platform-tab.bedrock { color: #44bd32; border-color: rgba(68, 189, 50, 0.3); }
+        .platform-tab.bedrock.active, .platform-tab.bedrock:hover {
+            background: rgba(68, 189, 50, 0.15); border-color: #44bd32;
+        }
+        .toast {
+            position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+            z-index: 1000; padding: 1rem 2rem; border-radius: 12px; color: #fff;
+            font-weight: 600; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            display: none; animation: slideUp 0.3s ease;
+        }
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+        .toast.info { background: var(--primary); }
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none;
+            justify-content: center; align-items: center; z-index: 200;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 2rem; max-width: 450px; width: 90%;
+        }
+        .modal h3 { margin-bottom: 1rem; }
+    </style>
+</head>
+<body>
+
+<div class="bg-animation" id="bg"></div>
+<div class="toast" id="toast"></div>
+
+<nav>
+    <div class="nav-container">
+        <div class="logo">
+            <span class="logo-icon"></span>
+            CloudCraft
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="active" onclick="showPage('home')">الرئيسية</a></li>
+            <li><a href="#" onclick="showPage('features')">المميزات</a></li>
+            <li><a href="#" onclick="showPage('pricing')">الباقات</a></li>
+            <li><a href="#" onclick="showPage('dashboard')">لوحة التحكم</a></li>
+        </ul>
+        <div class="auth-buttons">
+            <a href="#" class="btn btn-outline" onclick="showModal('login-modal')">تسجيل الدخول</a>
+            <a href="#" class="btn btn-primary" onclick="showModal('register-modal')">إنشاء حساب</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero" id="page-home">
+    <div class="hero-badge"> مجاني بالكامل  يدعم Java & Bedrock</div>
+    <h1>استضف سيرفر <span>ماين كرافت</span><br>الخاص بك مجاناً</h1>
+    <p>قم بإنشاء سيرفر ماين كرافت Java Edition أو Bedrock Edition بنقرة واحدة. أداء عالي، حماية DDoS، ودعم كامل للإصدارات.</p>
+    <div class="hero-actions">
+        <a href="#" class="btn btn-primary btn-lg" onclick="selectPlatform('java');showPage('create')"> Java Edition</a>
+        <a href="#" class="btn btn-outline btn-lg" onclick="selectPlatform('bedrock');showPage('create')"> Bedrock Edition</a>
+    </div>
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="number" id="server-count">15,247</div>
+            <div class="label">سيرفر نشط</div>
+        </div>
+        <div class="stat-item">
+            <div class="number">99.9%</div>
+            <div class="label">مدة التشغيل</div>
+        </div>
+        <div class="stat-item">
+            <div class="number" id="player-count">128,563</div>
+            <div class="label">لاعب نشط</div>
+        </div>
+    </div>
+</section>
+
+<section class="features" id="page-features" style="display:none;">
+    <h2 class="section-title">لماذا <span style="background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">CloudCraft</span>؟</h2>
+    <p class="section-sub">كل ما تحتاجه لاستضافة سيرفر احترافي، مجاناً</p>
+    <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>أداء عالي</h3><p>معالجات AMD Ryzen 9 من الجيل الأخير مع أقراص NVMe SSD لسرعة فائقة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>حماية DDoS</h3><p>حماية متكاملة من هجمات DDoS مع مراقبة على مدار الساعة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🧩</div><h3>بلقنات ومودات</h3><p>دعم كامل لـ Bukkit و Spigot و Paper و Forge و Fabric بنقرة واحدة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🌍</div><h3>دعم عالمي</h3><p>سيرفرات موزعة حول العالم لأفضل اتصال أينما كنت.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔄</div><h3>نسخ احتياطي</h3><p>نسخ احتياطي تلقائي يومي لعالمك مع إمكانية الاستعادة بنقرة واحدة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🎮</div><h3>كونسول متقدم</h3><p>تحكم كامل بالسيرفر من خلال الكونسول المباشر في المتصفح.</p></div>
+    </div>
+</section>
+
+<section class="pricing" id="page-pricing" style="display:none;">
+    <h2 class="section-title">اختر <span style="background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">باقتك</span></h2>
+    <p class="section-sub">كل الباقات تدعم Java و Bedrock مع إمكانية الترقية في أي وقت</p>
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <div class="plan-name">مجاني</div>
+            <div class="plan-price">0 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>1 سيرفر (Java أو Bedrock)</li>
+                <li>1 جيجابايت رام</li>
+                <li>10 لاعبين كحد أقصى</li>
+                <li>5 جيجابايت مساحة</li>
+                <li>دعم Vanilla / Bedrock</li>
+            </ul>
+            <a href="#" class="btn btn-outline" style="width:100%;" onclick="showPage('create')">ابدأ الآن</a>
+        </div>
+        <div class="pricing-card featured">
+            <div class="badge">الأكثر شهرة</div>
+            <div class="plan-name">مميز</div>
+            <div class="plan-price">9.99 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>3 سيرفرات (Java + Bedrock)</li>
+                <li>4 جيجابايت رام</li>
+                <li>غير محدود لاعبين</li>
+                <li>30 جيجابايت مساحة</li>
+                <li>جميع الإصدارات + Paper + Spigot</li>
+                <li>نسخ احتياطي يومي</li>
+            </ul>
+            <a href="#" class="btn btn-primary" style="width:100%;">اشترك الآن</a>
+        </div>
+        <div class="pricing-card">
+            <div class="plan-name">احترافي</div>
+            <div class="plan-price">24.99 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>10 سيرفرات (Java + Bedrock)</li>
+                <li>8 جيجابايت رام</li>
+                <li>غير محدود لاعبين</li>
+                <li>100 جيجابايت مساحة</li>
+                <li>جميع الإصدارات + مودات + إضافات</li>
+                <li>نسخ احتياطي يومي + دعم فني</li>
+            </ul>
+            <a href="#" class="btn btn-outline" style="width:100%;">اشترك الآن</a>
+        </div>
+    </div>
+</section>
+
+<section class="dashboard" id="page-dashboard" style="display:none;">
+    <div class="dashboard-header">
+        <div>
+            <h2>لوحة التحكم</h2>
+            <p style="color:var(--text-light);">مرحباً بك، يمكنك إدارة سيرفراتك من هنا</p>
+        </div>
+        <a href="#" class="btn btn-primary" onclick="showPage('create')">+ سيرفر جديد</a>
+    </div>
+    <div class="dashboard-grid" id="server-list"></div>
+    <h3 style="margin: 2rem 0 1rem;">الكونسول المباشر</h3>
+    <div class="console" id="console">
+        <div class="line"><span class="time">[12:34:56]</span> <span class="info">[CloudCraft] مرحباً بك في لوحة التحكم</span></div>
+        <div class="line"><span class="time">[12:34:57]</span> <span class="info">[CloudCraft] السيرفرات النشطة: 1</span></div>
+    </div>
+    <div class="console-input">
+        <input type="text" id="console-command" placeholder="اكتب أمراً..." onkeypress="if(event.key==='Enter')sendCommand()">
+        <button class="btn btn-primary" onclick="sendCommand()">إرسال</button>
+    </div>
+</section>
+
+<section class="create-server" id="page-create" style="display:none;">
+    <div class="form-card">
+        <h2 style="margin-bottom:2rem;text-align:center;">إنشاء سيرفر جديد</h2>
+        <div class="form-group">
+            <label>اختر المنصة</label>
+            <div class="platform-tabs" id="platform-select">
+                <span class="platform-tab java" onclick="selectPlatform('java')">⬡ Java Edition</span>
+                <span class="platform-tab bedrock active" onclick="selectPlatform('bedrock')">⬢ Bedrock Edition</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>اسم السيرفر</label>
+            <input type="text" id="server-name-input" placeholder="مثلاً: سيرفر العائلة">
+        </div>
+        <div class="form-group" id="version-group">
+            <label>إصدار ماين كرافت</label>
+            <select id="server-version">
+                <optgroup label="Bedrock (مستقر)">
+                    <option value="1.26.23.01">1.26.23.01 (أحدث إصدار Bedrock)</option>
+                    <option value="1.26.8">1.26.8</option>
+                    <option value="1.25.10">1.25.10</option>
+                    <option value="1.24.50">1.24.50</option>
+                    <option value="1.23.12">1.23.12</option>
+                </optgroup>
+                <optgroup label="Bedrock (سابق)">
+                    <option value="1.22.15">1.22.15</option>
+                    <option value="1.21.30">1.21.30</option>
+                    <option value="1.20.80">1.20.80</option>
+                    <option value="1.19.70">1.19.70</option>
+                    <option value="1.18.30">1.18.30</option>
+                </optgroup>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>نوع السيرفر</label>
+            <select id="server-type">
+                <option value="bedrock">Bedrock Server (رسمي)</option>
+                <option value="bedrock-pmmp">PocketMine-MP (مودات PHP)</option>
+                <option value="bedrock-nukkit">Nukkit (مودات Java)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>الذاكرة (RAM)</label>
+            <div class="slide-container">
+                <span>512MB</span>
+                <input type="range" id="ram-slider" min="512" max="4096" value="1024" step="512" oninput="document.getElementById('ram-value').textContent=this.value+'MB'">
+                <span id="ram-value" class="slide-value">1024MB</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>عدد اللاعبين الأقصى</label>
+            <div class="slide-container">
+                <span>2</span>
+                <input type="range" id="players-slider" min="2" max="50" value="10" step="1" oninput="document.getElementById('players-value').textContent=this.value">
+                <span id="players-value" class="slide-value">10</span>
+            </div>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:1rem;">
+            <label style="margin:0;">تشغيل تلقائي</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="auto-start" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:2rem;" onclick="createServer()">
+            إنشاء السيرفر
+        </button>
+    </div>
+</section>
+
+<div class="modal-overlay" id="login-modal">
+    <div class="modal">
+        <h3>تسجيل الدخول</h3>
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+            <label>كلمة المرور</label>
+            <input type="password" placeholder="********">
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="closeModal('login-modal')">تسجيل الدخول</button>
+        <p style="margin-top:1rem;text-align:center;color:var(--text-light);font-size:0.85rem;">
+            ليس لديك حساب؟ <a href="#" onclick="closeModal('login-modal');showModal('register-modal')" style="color:var(--secondary);">إنشاء حساب</a>
+        </p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="register-modal">
+    <div class="modal">
+        <h3>إنشاء حساب جديد</h3>
+        <div class="form-group">
+            <label>اسم المستخدم</label>
+            <input type="text" placeholder="اسمك في السيرفر">
+        </div>
+        <div class="form-group">
+            <label>البريد الإلكتروني</label>
+            <input type="email" placeholder="your@email.com">
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>كلمة المرور</label>
+                <input type="password" placeholder="********">
+            </div>
+            <div class="form-group">
+                <label>تأكيد كلمة المرور</label>
+                <input type="password" placeholder="********">
+            </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="closeModal('register-modal')">إنشاء حساب</button>
+        <p style="margin-top:1rem;text-align:center;color:var(--text-light);font-size:0.85rem;">
+            لديك حساب؟ <a href="#" onclick="closeModal('register-modal');showModal('login-modal')" style="color:var(--secondary);">تسجيل الدخول</a>
+        </p>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 CloudCraft - جميع الحقوق محفوظة. استضافة ماين كرافت مجانية.</p>
+    <p style="margin-top:0.5rem;font-size:0.8rem;">
+        <a href="#" style="color:var(--text-light);">سياسة الخصوصية</a> • 
+        <a href="#" style="color:var(--text-light);">شروط الخدمة</a> • 
+        <a href="#" style="color:var(--text-light);">الدعم الفني</a>
+    </p>
+</footer>
+
+<script>
+    let currentPlatform = 'bedrock';
+    (function() {
+        const bg = document.getElementById('bg');
+        for (let i = 0; i < 20; i++) {
+            const cube = document.createElement('div');
+            cube.className = 'cube';
+            cube.style.left = Math.random() * 100 + '%';
+            cube.style.width = (20 + Math.random() * 30) + 'px';
+            cube.style.height = cube.style.width;
+            cube.style.animationDuration = (15 + Math.random() * 20) + 's';
+            cube.style.animationDelay = (Math.random() * 20) + 's';
+            bg.appendChild(cube);
+        }
+    })();
+
+    function selectPlatform(platform) {
+        currentPlatform = platform;
+        document.querySelectorAll('.platform-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelector('.platform-tab.' + platform).classList.add('active');
+        const versionSelect = document.getElementById('server-version');
+        const typeSelect = document.getElementById('server-type');
+        if (platform === 'bedrock') {
+            versionSelect.innerHTML = '<optgroup label="Bedrock (مستقر)"><option value="1.26.23.01">1.26.23.01 (أحدث إصدار Bedrock)</option><option value="1.26.8">1.26.8</option><option value="1.25.10">1.25.10</option><option value="1.24.50">1.24.50</option><option value="1.23.12">1.23.12</option></optgroup><optgroup label="Bedrock (سابق)"><option value="1.22.15">1.22.15</option><option value="1.21.30">1.21.30</option><option value="1.20.80">1.20.80</option><option value="1.19.70">1.19.70</option><option value="1.18.30">1.18.30</option></optgroup>';
+            typeSelect.innerHTML = '<option value="bedrock">Bedrock Server (رسمي)</option><option value="bedrock-pmmp">PocketMine-MP (مودات PHP)</option><option value="bedrock-nukkit">Nukkit (مودات Java)</option>';
+        } else {
+            versionSelect.innerHTML = '<optgroup label="Java (أحدث)"><option value="paper-1.21.4">Paper 1.21.4 (موصى به)</option><option value="vanilla-1.21.4">Vanilla 1.21.4</option><option value="spigot-1.21.4">Spigot 1.21.4</option><option value="forge-1.21.4">Forge 1.21.4</option><option value="fabric-1.21.4">Fabric 1.21.4</option></optgroup><optgroup label="Java (مستقر)"><option value="paper-1.20.4">Paper 1.20.4</option><option value="vanilla-1.20.4">Vanilla 1.20.4</option><option value="paper-1.19.4">Paper 1.19.4</option><option value="paper-1.18.2">Paper 1.18.2</option><option value="paper-1.16.5">Paper 1.16.5</option></optgroup>';
+            typeSelect.innerHTML = '<option value="vanilla">Vanilla (أصلي)</option><option value="paper">Paper (موصى به)</option><option value="spigot">Spigot</option><option value="forge">Forge (مودات)</option><option value="fabric">Fabric (مودات)</option>';
+        }
+    }
+
+    function showPage(page) {
+        document.querySelectorAll('[id^="page-"]').forEach(el => el.style.display = 'none');
+        if (page === 'home') document.getElementById('page-home').style.display = 'flex';
+        else { const el = document.getElementById('page-' + page); if (el) el.style.display = 'block'; }
+        document.querySelectorAll('.nav-links a').forEach(link => link.classList.remove('active'));
+        const navMap = { home: 0, features: 1, pricing: 2, dashboard: 3 };
+        const navLinks = document.querySelectorAll('.nav-links a');
+        if (navMap[page] !== undefined) navLinks[navMap[page]].classList.add('active');
+    }
+
+    function showModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+    });
+
+    function showToast(message, type) {
+        const t = document.getElementById('toast');
+        t.textContent = message; t.className = 'toast ' + type;
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    const servers = [
+        { name: 'سيرفر البقاء', platform: 'bedrock', version: '1.26.23.01', status: 'online', players: '3/10', ram: '512MB / 1GB' },
+        { name: 'سيرفر المغامرة', platform: 'java', version: 'Paper 1.21.4', status: 'offline', players: '0/20', ram: '0MB / 2GB' },
+    ];
+
+    function renderServers() {
+        const container = document.getElementById('server-list');
+        if (!container) return;
+        container.innerHTML = servers.map((s, i) => `
+            <div class="server-card">
+                <div class="top">
+                    <div>
+                        <div class="server-name">${s.name} <span style="font-size:0.7rem;color:${s.platform==='bedrock'?'#44bd32':'#e84118'};">${s.platform==='bedrock'?'⬢ Bedrock':'⬡ Java'}</span></div>
+                        <div style="font-size:0.85rem;color:var(--text-light);margin-top:0.3rem;">${s.version}</div>
+                    </div>
+                    <span class="server-status ${s.status}">${s.status === 'online' ? 'متصل' : 'متوقف'}</span>
+                </div>
+                <div class="server-info"><span>👥 ${s.players}</span><span>💾 ${s.ram}</span></div>
+                <div class="server-actions">
+                    <button class="btn ${s.status === 'online' ? 'btn-danger' : 'btn-success'}" onclick="toggleServer(${i})">${s.status === 'online' ? 'إيقاف' : 'تشغيل'}</button>
+                    <button class="btn btn-outline" onclick="showToast('فتح الكونسول','info')">🖥️ كونسول</button>
+                    <button class="btn btn-outline" style="color:var(--danger);" onclick="deleteServer(${i})">🗑️ حذف</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleServer(i) {
+        servers[i].status = servers[i].status === 'online' ? 'offline' : 'online';
+        renderServers();
+        const msg = servers[i].status === 'online' ? '✅ تم تشغيل' : '⏹️ تم إيقاف';
+        addConsoleLine(`[CloudCraft] ${msg}: ${servers[i].name}`, 'info');
+        showToast(`${msg} ${servers[i].name}`, servers[i].status === 'online' ? 'success' : 'info');
+    }
+
+    function deleteServer(i) {
+        const n = servers[i].name; servers.splice(i, 1);
+        renderServers(); addConsoleLine(`[CloudCraft] 🗑️ تم حذف: ${n}`, 'warn');
+        showToast(`تم حذف "${n}"`, 'info');
+    }
+
+    function createServer() {
+        const name = document.getElementById('server-name-input').value.trim();
+        if (!name) { showToast('الرجاء إدخال اسم للسيرفر', 'error'); return; }
+        const version = document.getElementById('server-version').value;
+        const ram = document.getElementById('ram-slider').value;
+        const players = document.getElementById('players-slider').value;
+        servers.push({ name, platform: currentPlatform, version, status: 'online', players: '0/'+players, ram: ram+'MB / '+ram+'MB' });
+        renderServers();
+        addConsoleLine(`[CloudCraft] ✅ تم إنشاء السيرفر "${name}"`, 'info');
+        showToast(`✅ تم إنشاء ${name}`, 'success');
+        showPage('dashboard');
+    }
+
+    function addConsoleLine(text, type) {
+        const c = document.getElementById('console');
+        if (!c) return;
+        const t = new Date().toLocaleTimeString('ar-SA');
+        const l = document.createElement('div'); l.className = 'line';
+        l.innerHTML = '<span class="time">['+t+']</span> <span class="'+type+'">'+text+'</span>';
+        c.appendChild(l); c.scrollTop = c.scrollHeight;
+    }
+
+    function sendCommand() {
+        const input = document.getElementById('console-command');
+        const cmd = input.value.trim();
+        if (!cmd) return;
+        addConsoleLine('$ '+cmd, 'warn');
+        if (cmd === 'help') {
+            addConsoleLine('الأوامر: help, list, status, start <name>, stop <name>, platforms', 'info');
+        } else if (cmd === 'list') {
+            servers.forEach(s => addConsoleLine('  '+(s.platform==='bedrock'?'⬢':'⬡')+' '+s.name+' - '+(s.status==='online'?'🟢 متصل':'🔴 متوقف'), 'info'));
+        } else if (cmd === 'status') {
+            const on = servers.filter(s=>s.status==='online').length;
+            addConsoleLine('🟢 السيرفرات: '+servers.length+' | النشطة: '+on+' | المتوقفة: '+(servers.length-on), 'info');
+        } else if (cmd === 'platforms') {
+            addConsoleLine('⬢ Bedrock - يدعم 1.26.23.01', 'info');
+            addConsoleLine('⬡ Java - يدعم Paper/Spigot/Forge/Fabric', 'info');
+        } else if (cmd.startsWith('start ')) {
+            const n = cmd.replace('start ','');
+            const s = servers.find(x => x.name === n);
+            if(s){s.status='online';renderServers();addConsoleLine('✅ '+n+' : تم التشغيل','info');showToast('تم تشغيل '+n,'success');}
+            else addConsoleLine('❌ السيرفر "'+n+'" غير موجود','error');
+        } else if (cmd.startsWith('stop ')) {
+            const n = cmd.replace('stop ','');
+            const s = servers.find(x => x.name === n);
+            if(s){s.status='offline';renderServers();addConsoleLine('✅ '+n+' : تم الإيقاف','info');showToast('تم إيقاف '+n,'info');}
+            else addConsoleLine('❌ السيرفر "'+n+'" غير موجود','error');
+        } else addConsoleLine('❌ أمر غير معروف: '+cmd+' - اكتب help', 'error');
+        input.value = '';
+    }
+
+    function animateNumber(el, target) {
+        let c = 0; const s = Math.ceil(target/60);
+        const i = setInterval(() => { c += s; if(c>=target){c=target;clearInterval(i);} el.textContent=c.toLocaleString('ar-SA'); }, 30);
+    }
+
+    renderServers();
+    setTimeout(() => animateNumber(document.getElementById('server-count'), 15247), 500);
+    setTimeout(() => animateNumber(document.getElementById('player-count'), 128563), 800);
+    setTimeout(() => {
+        addConsoleLine('[CloudCraft] ✅ تم تحميل لوحة التحكم بنجاح', 'info');
+        addConsoleLine('[CloudCraft] ⬢ Bedrock 1.26.23.01 متوفر', 'info');
+        addConsoleLine('[CloudCraft] 💡 اكتب help لعرض الأوامر', 'info');
+    }, 1000);
+    selectPlatform('bedrock');
+</script>
+
+</body>
+</html>
