@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudCraft - استضافة ماين كرافت مجانية</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5a4bd1;
+            --secondary: #00cec9;
+            --accent: #fd79a8;
+            --bg-dark: #0a0a1a;
+            --bg-card: #12122a;
+            --bg-card2: #1a1a3a;
+            --text: #e0e0e0;
+            --text-light: #a0a0b8;
+            --success: #00b894;
+            --warning: #fdcb6e;
+            --danger: #e17055;
+            --bedrock: #44bd32;
+            --java: #e84118;
+            --gradient: linear-gradient(135deg, #6c5ce7, #00cec9);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family:'Segoe UI',Tahoma,sans-serif; background:var(--bg-dark); color:var(--text); min-height:100vh; overflow-x:hidden; }
+        ::-webkit-scrollbar { width:6px; }
+        ::-webkit-scrollbar-track { background:var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background:var(--primary); border-radius:4px; }
+
+        .bg-animation { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; overflow:hidden; pointer-events:none; }
+        .bg-animation .cube { position:absolute; width:40px; height:40px; background:rgba(108,92,231,0.05); border:1px solid rgba(108,92,231,0.1); animation:float 20s infinite; }
+        @keyframes float { 0%{transform:translateY(100vh) rotate(0deg);opacity:0;} 10%{opacity:1;} 90%{opacity:1;} 100%{transform:translateY(-100vh) rotate(720deg);opacity:0;} }
+
+        nav { position:fixed; top:0; width:100%; z-index:100; background:rgba(10,10,26,0.95); backdrop-filter:blur(20px); border-bottom:1px solid rgba(108,92,231,0.1); }
+        .nav-container { max-width:1200px; margin:0 auto; padding:0.8rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+        .logo { font-size:1.6rem; font-weight:800; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:flex; align-items:center; gap:0.5rem; cursor:pointer; }
+        .logo-icon { width:32px; height:32px; background:var(--gradient); clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%); }
+        .nav-links { display:flex; gap:1.5rem; list-style:none; }
+        .nav-links a { color:var(--text-light); text-decoration:none; font-size:0.9rem; transition:color 0.3s; position:relative; cursor:pointer; }
+        .nav-links a:hover, .nav-links a.active { color:#fff; }
+        .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:2px; background:var(--gradient); transition:width 0.3s; }
+        .nav-links a:hover::after, .nav-links a.active::after { width:100%; }
+        .auth-buttons { display:flex; gap:0.8rem; align-items:center; }
+
+        .user-menu { display:none; align-items:center; gap:0.8rem; cursor:pointer; position:relative; }
+        .user-menu.show { display:flex; }
+        .user-avatar { width:36px; height:36px; border-radius:50%; background:var(--gradient); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1rem; color:#fff; }
+        .user-name { font-size:0.9rem; font-weight:600; color:#fff; }
+        .user-dropdown { position:absolute; top:100%; left:0; margin-top:0.5rem; background:var(--bg-card); border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:0.8rem; min-width:200px; display:none; box-shadow:0 8px 32px rgba(0,0,0,0.5); z-index:50; }
+        .user-dropdown.show { display:block; }
+        .user-dropdown .item { padding:0.6rem 0.8rem; border-radius:8px; cursor:pointer; transition:0.2s; font-size:0.9rem; display:flex; align-items:center; gap:0.5rem; }
+        .user-dropdown .item:hover { background:rgba(255,255,255,0.05); }
+        .user-dropdown .item.danger { color:var(--danger); }
+
+        .btn { padding:0.5rem 1.3rem; border:none; border-radius:8px; font-size:0.85rem; cursor:pointer; transition:all 0.3s; text-decoration:none; display:inline-block; text-align:center; }
+        .btn-outline { background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.2); }
+        .btn-outline:hover { border-color:var(--primary); background:rgba(108,92,231,0.1); }
+        .btn-primary { background:var(--gradient); color:#fff; }
+        .btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(108,92,231,0.4); }
+        .btn-lg { padding:0.7rem 1.8rem; font-size:1rem; }
+        .btn-sm { padding:0.3rem 0.8rem; font-size:0.75rem; }
+        .btn-success { background:var(--success); color:#fff; }
+        .btn-success:hover { transform:translateY(-2px); box-shadow:0 4px 15px rgba(0,184,148,0.4); }
+        .btn-danger { background:var(--danger); color:#fff; }
+        .btn-danger:hover { transform:translateY(-2px); box-shadow:0 4px 15px rgba(225,112,85,0.4); }
+        .btn-warning { background:var(--warning); color:#222; }
+        .btn-ghost { background:rgba(255,255,255,0.05); color:var(--text-light); }
+        .btn-ghost:hover { background:rgba(255,255,255,0.1); color:#fff; }
+
+        .hero { position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:2rem; }
+        .hero-badge { background:rgba(108,92,231,0.15); border:1px solid rgba(108,92,231,0.3); color:var(--secondary); padding:0.4rem 1.2rem; border-radius:50px; font-size:0.85rem; margin-bottom:1.5rem; }
+        .hero h1 { font-size:3.2rem; font-weight:800; line-height:1.2; margin-bottom:1rem; }
+        .hero h1 span { background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .hero p { font-size:1.1rem; color:var(--text-light); max-width:600px; margin-bottom:2rem; line-height:1.6; }
+        .hero-actions { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-bottom:3rem; }
+        .stats-bar { display:flex; gap:3rem; flex-wrap:wrap; justify-content:center; }
+        .stat-item { text-align:center; }
+        .stat-item .number { font-size:2rem; font-weight:800; background:var(--gradient); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .stat-item .label { font-size:0.85rem; color:var(--text-light); }
+
+        .section-box { position:relative; z-index:1; max-width:1200px; margin:0 auto; padding:6rem 2rem; display:none; }
+        .section-box.show { display:block; }
+        .section-title { text-align:center; font-size:2.2rem; font-weight:800; margin-bottom:1rem; }
+        .section-sub { text-align:center; color:var(--text-light); font-size:1rem; margin-bottom:3rem; }
+        .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.5rem; }
+        .feature-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:1.8rem; transition:all 0.3s; position:relative; overflow:hidden; }
+        .feature-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:3px; background:var(--gradient); transform:scaleX(0); transform-origin:left; transition:transform 0.4s; }
+        .feature-card:hover::before { transform:scaleX(1); }
+        .feature-card:hover { transform:translateY(-5px); border-color:rgba(108,92,231,0.3); box-shadow:0 8px 32px rgba(108,92,231,0.15); }
+        .feature-icon { width:48px; height:48px; background:rgba(108,92,231,0.15); border-radius:12px; display:flex; align-items:center; justify-content:center; margin-bottom:1.2rem; font-size:1.4rem; }
+        .feature-card h3 { font-size:1.1rem; margin-bottom:0.6rem; }
+        .feature-card p { color:var(--text-light); font-size:0.9rem; line-height:1.6; }
+
+        .pricing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+        .pricing-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:20px; padding:2.5rem 2rem; text-align:center; transition:all 0.3s; position:relative; }
+        .pricing-card.featured { border:1px solid var(--primary); transform:scale(1.03); }
+        .pricing-card.featured .badge { position:absolute; top:-12px; left:50%; transform:translateX(-50%); background:var(--gradient); color:#fff; padding:0.3rem 1.5rem; border-radius:50px; font-size:0.8rem; font-weight:600; }
+        .pricing-card:hover { transform:translateY(-8px); border-color:rgba(108,92,231,0.3); box-shadow:0 8px 32px rgba(108,92,231,0.15); }
+        .pricing-card.featured:hover { transform:scale(1.03) translateY(-8px); }
+        .plan-name { font-size:1.2rem; font-weight:700; margin-bottom:0.5rem; }
+        .plan-price { font-size:2.8rem; font-weight:800; margin:1.2rem 0; }
+        .plan-price span { font-size:0.9rem; font-weight:400; color:var(--text-light); }
+        .plan-features { list-style:none; margin:1.5rem 0; text-align:right; }
+        .plan-features li { padding:0.6rem 0; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; gap:0.5rem; }
+        .plan-features li::before { content:'✓'; color:var(--success); font-weight:bold; }
+
+        .dash-wrap { position:relative; z-index:1; padding:90px 2rem 2rem; max-width:1200px; margin:0 auto; }
+        .dash-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+        .dash-header h2 { font-size:1.6rem; }
+        .dash-tabs { display:flex; gap:0.3rem; margin-bottom:1.5rem; background:rgba(255,255,255,0.03); border-radius:12px; padding:3px; flex-wrap:wrap; }
+        .dash-tab { padding:0.6rem 1.5rem; border-radius:10px; cursor:pointer; transition:all 0.3s; font-size:0.85rem; font-weight:600; color:var(--text-light); border:none; background:transparent; }
+        .dash-tab:hover { color:#fff; background:rgba(255,255,255,0.05); }
+        .dash-tab.active { background:var(--primary); color:#fff; box-shadow:0 4px 15px rgba(108,92,231,0.3); }
+        .dash-content { display:none; }
+        .dash-content.show { display:block; }
+        .server-grid { display:grid; gap:1rem; }
+        .server-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:16px; padding:1.5rem; transition:all 0.3s; }
+        .server-card:hover { border-color:rgba(108,92,231,0.3); transform:translateY(-2px); }
+        .server-card .s-top { display:flex; justify-content:space-between; align-items:start; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.5rem; }
+        .s-name { font-size:1.05rem; font-weight:700; }
+        .s-badge { padding:0.2rem 0.7rem; border-radius:50px; font-size:0.7rem; font-weight:600; }
+        .s-badge.java { background:rgba(232,65,24,0.15); color:var(--java); }
+        .s-badge.bedrock { background:rgba(68,189,50,0.15); color:var(--bedrock); }
+        .s-status { padding:0.2rem 0.8rem; border-radius:50px; font-size:0.75rem; font-weight:600; }
+        .s-status.online { background:rgba(0,184,148,0.15); color:var(--success); }
+        .s-status.offline { background:rgba(225,112,85,0.15); color:var(--danger); }
+        .s-status.starting { background:rgba(253,203,110,0.15); color:var(--warning); }
+        .s-info { display:flex; gap:1.2rem; margin:0.6rem 0; font-size:0.8rem; color:var(--text-light); flex-wrap:wrap; }
+        .s-addr { background:rgba(255,255,255,0.05); padding:0.3rem 0.8rem; border-radius:6px; font-family:monospace; font-size:0.85rem; display:inline-flex; align-items:center; gap:0.5rem; direction:ltr; text-align:left; }
+        .s-addr .copy { cursor:pointer; color:var(--secondary); font-size:0.75rem; }
+        .s-actions { display:flex; gap:0.5rem; margin-top:1rem; flex-wrap:wrap; }
+
+        .server-detail { display:none; }
+        .server-detail.show { display:block; }
+        .detail-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
+        .detail-title { font-size:1.4rem; font-weight:700; }
+        .detail-tabs { display:flex; gap:0.2rem; margin-bottom:1.5rem; overflow-x:auto; background:rgba(255,255,255,0.03); border-radius:12px; padding:3px; }
+        .detail-tab { padding:0.5rem 1.2rem; border-radius:10px; cursor:pointer; transition:all 0.3s; font-size:0.8rem; font-weight:600; color:var(--text-light); border:none; background:transparent; white-space:nowrap; }
+        .detail-tab:hover { color:#fff; background:rgba(255,255,255,0.05); }
+        .detail-tab.active { background:var(--primary); color:#fff; }
+        .detail-content { display:none; }
+        .detail-content.show { display:block; }
+
+        .console-wrap { background:#0d0d1a; border:1px solid rgba(255,255,255,0.05); border-radius:12px; overflow:hidden; }
+        .console-view { font-family:'Consolas',monospace; font-size:0.8rem; height:350px; overflow-y:auto; padding:1rem; }
+        .console-view .line { padding:2px 0; }
+        .console-view .line .time { color:var(--text-light); margin-left:0.5rem; }
+        .console-view .line .info { color:var(--secondary); }
+        .console-view .line .warn { color:var(--warning); }
+        .console-view .line .error { color:var(--danger); }
+        .console-in { display:flex; gap:0.5rem; padding:0.5rem 1rem 1rem; }
+        .console-in input { flex:1; background:#0d0d1a; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:0.6rem 1rem; color:#fff; font-family:'Consolas',monospace; direction:ltr; }
+        .console-in input:focus { outline:none; border-color:var(--primary); }
+
+        .options-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1rem; }
+        .option-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:14px; padding:1.2rem; }
+        .option-card label { font-size:0.85rem; font-weight:600; display:block; margin-bottom:0.4rem; }
+        .option-card .desc { font-size:0.75rem; color:var(--text-light); margin-bottom:0.6rem; }
+        .option-card select, .option-card input[type="text"], .option-card input[type="number"] { width:100%; padding:0.5rem 0.7rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#fff; }
+        .option-card select:focus, .option-card input:focus { outline:none; border-color:var(--primary); }
+        .toggle-row { display:flex; justify-content:space-between; align-items:center; }
+        .toggle-switch { position:relative; width:44px; height:24px; flex-shrink:0; }
+        .toggle-switch input { opacity:0; width:0; height:0; }
+        .toggle-slider { position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background:rgba(255,255,255,0.1); border-radius:24px; transition:0.3s; }
+        .toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; bottom:3px; background:#fff; border-radius:50%; transition:0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background:var(--success); }
+        .toggle-switch input:checked + .toggle-slider::before { transform:translateX(20px); }
+
+        .players-table { width:100%; border-collapse:collapse; }
+        .players-table th, .players-table td { padding:0.6rem 0.8rem; text-align:right; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.85rem; }
+        .players-table th { color:var(--text-light); font-weight:600; font-size:0.75rem; }
+        .players-table tr:hover td { background:rgba(255,255,255,0.03); }
+        .player-input-row { display:flex; gap:0.5rem; margin-top:1rem; }
+        .player-input-row input { flex:1; padding:0.5rem 0.7rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; color:#fff; }
+        .player-tag { display:inline-block; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.7rem; font-weight:600; }
+        .player-tag.op { background:rgba(253,203,110,0.2); color:var(--warning); }
+        .player-tag.whitelist { background:rgba(0,206,201,0.2); color:var(--secondary); }
+        .player-tag.ban { background:rgba(225,112,85,0.2); color:var(--danger); }
+
+        .mods-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.8rem; }
+        .mod-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:1rem; transition:0.3s; cursor:pointer; position:relative; }
+        .mod-card:hover { border-color:rgba(108,92,231,0.3); transform:translateY(-2px); }
+        .mod-card .m-name { font-weight:700; font-size:0.9rem; }
+        .mod-card .m-desc { font-size:0.75rem; color:var(--text-light); margin:0.3rem 0; }
+        .mod-card .m-tag { display:inline-block; padding:0.15rem 0.4rem; border-radius:4px; font-size:0.65rem; font-weight:600; }
+        .mod-card .m-tag.plugin { background:rgba(108,92,231,0.2); color:var(--primary); }
+        .mod-card .m-tag.mod { background:rgba(253,121,168,0.2); color:var(--accent); }
+        .mod-card .m-installed { position:absolute; top:0.5rem; left:0.5rem; background:var(--success); color:#fff; padding:0.1rem 0.4rem; border-radius:4px; font-size:0.6rem; }
+        .mod-search { width:100%; padding:0.7rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:#fff; margin-bottom:1rem; font-size:0.9rem; direction:rtl; }
+        .mod-search:focus { outline:none; border-color:var(--primary); }
+
+        .create-wrap { position:relative; z-index:1; max-width:700px; margin:90px auto 2rem; padding:0 2rem; }
+        .form-card { background:var(--bg-card); border:1px solid rgba(255,255,255,0.05); border-radius:20px; padding:2.5rem; }
+        .form-group { margin-bottom:1.2rem; }
+        .form-group label { display:block; margin-bottom:0.4rem; font-weight:600; font-size:0.9rem; }
+        .form-group input, .form-group select { width:100%; padding:0.7rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:8px; color:#fff; }
+        .form-group select:focus, .form-group input:focus { outline:none; border-color:var(--primary); }
+        .form-group select option { background:var(--bg-dark); color:#fff; }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+        .slide-container { display:flex; align-items:center; gap:1rem; }
+        .slide-container input[type="range"] { flex:1; height:6px; -webkit-appearance:none; background:rgba(255,255,255,0.1); border-radius:3px; }
+        .slide-container input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:18px; height:18px; background:var(--gradient); border-radius:50%; cursor:pointer; }
+        .slide-value { min-width:50px; text-align:center; font-weight:700; color:var(--secondary); }
+        .platform-tabs { display:flex; justify-content:center; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; }
+        .platform-tab { padding:0.5rem 1.5rem; border-radius:50px; border:1px solid rgba(255,255,255,0.1); cursor:pointer; transition:all 0.3s; font-size:0.85rem; font-weight:600; }
+        .platform-tab.java { color:var(--java); border-color:rgba(232,65,24,0.3); }
+        .platform-tab.java.active, .platform-tab.java:hover { background:rgba(232,65,24,0.15); border-color:var(--java); }
+        .platform-tab.bedrock { color:var(--bedrock); border-color:rgba(68,189,50,0.3); }
+        .platform-tab.bedrock.active, .platform-tab.bedrock:hover { background:rgba(68,189,50,0.15); border-color:var(--bedrock); }
+
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:none; justify-content:center; align-items:center; z-index:200; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:var(--bg-card); border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:2.5rem; max-width:450px; width:90%; max-height:90vh; overflow-y:auto; position:relative; }
+        .modal h3 { margin-bottom:1.2rem; text-align:center; font-size:1.4rem; }
+        .modal .close-btn { position:absolute; top:1rem; left:1rem; background:none; border:none; color:var(--text-light); font-size:1.5rem; cursor:pointer; }
+
+        .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); z-index:1000; padding:1rem 2rem; border-radius:12px; color:#fff; font-weight:600; box-shadow:0 8px 32px rgba(0,0,0,0.4); display:none; animation:slideUp 0.3s ease; }
+        .toast.success { background:var(--success); }
+        .toast.error { background:var(--danger); }
+        .toast.info { background:var(--primary); }
+        .toast.warning { background:var(--warning); color:#222; }
+        @keyframes slideUp { from{transform:translateX(-50%) translateY(20px);opacity:0;} to{transform:translateX(-50%) translateY(0);opacity:1;} }
+
+        footer { position:relative; z-index:1; background:rgba(10,10,26,0.8); border-top:1px solid rgba(255,255,255,0.05); padding:2.5rem 2rem; text-align:center; }
+        footer p { color:var(--text-light); font-size:0.85rem; }
+        .dev-credit { margin-top:0.8rem; font-size:0.85rem; color:var(--text-light); }
+        .dev-credit a { color:var(--secondary); text-decoration:none; }
+
+        .world-preview { background:rgba(255,255,255,0.02); border-radius:12px; padding:1.5rem; text-align:center; border:2px dashed rgba(255,255,255,0.1); }
+        .world-preview .seed-display { font-family:monospace; font-size:1.4rem; color:var(--secondary); }
+        .backup-item { display:flex; justify-content:space-between; align-items:center; padding:0.8rem; background:rgba(255,255,255,0.02); border-radius:8px; margin-bottom:0.5rem; }
+        .backup-item .b-info { font-size:0.85rem; }
+        .backup-item .b-info span { color:var(--text-light); font-size:0.75rem; }
+
+        .queue-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:none; justify-content:center; align-items:center; z-index:300; }
+        .queue-overlay.active { display:flex; }
+        .queue-box { background:var(--bg-card); border:1px solid rgba(108,92,231,0.3); border-radius:24px; padding:3rem; text-align:center; max-width:400px; width:90%; }
+        .queue-box .q-spinner { width:60px; height:60px; border:4px solid rgba(108,92,231,0.2); border-top:4px solid var(--primary); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 1.5rem; }
+        @keyframes spin { to{transform:rotate(360deg);} }
+        .queue-box .q-text { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
+        .queue-box .q-sub { color:var(--text-light); font-size:0.85rem; }
+
+        .seed-input { font-family:monospace; direction:ltr; text-align:left; }
+
+        /* Login page full */
+        .login-full-page { min-height:100vh; display:flex; justify-content:center; align-items:center; position:relative; z-index:1; padding:2rem; }
+        .login-full-card { background:var(--bg-card); border:1px solid rgba(108,92,231,0.3); border-radius:24px; padding:3rem; max-width:420px; width:100%; }
+        .login-full-card .logo { justify-content:center; margin-bottom:0.5rem; }
+        .login-full-card p.sub { text-align:center; color:var(--text-light); font-size:0.9rem; margin-bottom:2rem; }
+        .login-full-card .dev-credit { text-align:center; margin-top:1.5rem; }
+
+        @media (max-width:768px) {
+            .nav-links { display:none; }
+            .hero h1 { font-size:2rem; }
+            .stats-bar { gap:1.5rem; }
+            .pricing-card.featured { transform:none; }
+            .pricing-card.featured:hover { transform:translateY(-8px); }
+            .form-row { grid-template-columns:1fr; }
+            .dash-header { flex-direction:column; align-items:stretch; }
+            .options-grid { grid-template-columns:1fr; }
+            .mods-grid { grid-template-columns:1fr 1fr; }
+        }
+        @media (max-width:480px) { .mods-grid { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="bg-animation" id="bg"></div>
+<div class="toast" id="toast"></div>
+
+<!-- Queue overlay -->
+<div class="queue-overlay" id="queue-overlay">
+    <div class="queue-box">
+        <div class="q-spinner"></div>
+        <div class="q-text">جاري تجهيز السيرفر...</div>
+        <div class="q-sub">رقمك في الطابور: <span id="queue-position">1</span></div>
+    </div>
+</div>
+
+<!-- ===== NAV ===== -->
+<nav>
+    <div class="nav-container">
+        <div class="logo" onclick="showPage('home')">
+            <span class="logo-icon"></span>
+            CloudCraft
+        </div>
+        <ul class="nav-links" id="nav-links">
+            <li><a class="active" onclick="showPage('home')">الرئيسية</a></li>
+            <li><a onclick="showPage('features')">المميزات</a></li>
+            <li><a onclick="showPage('pricing')">الباقات</a></li>
+            <li><a onclick="showPage('dashboard')" id="nav-dash">لوحة التحكم</a></li>
+        </ul>
+        <div class="auth-buttons">
+            <div class="user-menu" id="user-menu">
+                <div class="user-avatar" id="user-avatar">ض</div>
+                <div class="user-name" id="user-name">مستخدم</div>
+                <div class="user-dropdown" id="user-dropdown">
+                    <div class="item" onclick="showPage('profile')">👤 ملفي الشخصي</div>
+                    <div class="item" onclick="showPage('dashboard')">📊 لوحة التحكم</div>
+                    <div class="item" onclick="showPage('create')">➕ سيرفر جديد</div>
+                    <div class="item" onclick="showPage('pricing')">💎 الترقية</div>
+                    <div class="item danger" onclick="logout()">🚪 تسجيل الخروج</div>
+                </div>
+            </div>
+            <a class="btn btn-outline" id="btn-login" onclick="showModal('login-modal')">تسجيل الدخول</a>
+            <a class="btn btn-primary" id="btn-register" onclick="showModal('register-modal')">إنشاء حساب</a>
+        </div>
+    </div>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="page-home">
+    <div class="hero-badge">🆓 مجاني بالكامل • يدعم Java & Bedrock</div>
+    <h1>استضف سيرفر <span>ماين كرافت</span><br>الخاص بك مجاناً</h1>
+    <p>قم بإنشاء سيرفر ماين كرافت Java أو Bedrock بنقرة واحدة. أداء عالي، حماية DDoS، دعم المودات والبلقنات.</p>
+    <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" onclick="selectPlatform('java');showPage('create')">☕ Java Edition</a>
+        <a class="btn btn-outline btn-lg" onclick="selectPlatform('bedrock');showPage('create')">⬢ Bedrock Edition</a>
+    </div>
+    <div class="stats-bar">
+        <div class="stat-item"><div class="number" id="server-count">15,247</div><div class="label">سيرفر نشط</div></div>
+        <div class="stat-item"><div class="number">99.9%</div><div class="label">مدة التشغيل</div></div>
+        <div class="stat-item"><div class="number" id="player-count">128,563</div><div class="label">لاعب نشط</div></div>
+    </div>
+</section>
+
+<!-- ===== FEATURES ===== -->
+<section class="section-box" id="page-features">
+    <h2 class="section-title">لماذا <span style="background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">CloudCraft</span>؟</h2>
+    <p class="section-sub">كل ما تحتاجه لاستضافة سيرفر احترافي، مجاناً</p>
+    <div class="features-grid">
+        <div class="feature-card"><div class="feature-icon">⚡</div><h3>أداء عالي</h3><p>معالجات AMD Ryzen 9 مع أقراص NVMe SSD لسرعة فائقة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🛡️</div><h3>حماية DDoS</h3><p>حماية متكاملة من هجمات DDoS مع مراقبة 24/7.</p></div>
+        <div class="feature-card"><div class="feature-icon">🧩</div><h3>مودات وبلقنات</h3><p>دعم كامل لـ Forge و Fabric و Paper و Spigot مع متصفح مدمج.</p></div>
+        <div class="feature-card"><div class="feature-icon">🌍</div><h3>دعم عالمي</h3><p>سيرفرات موزعة حول العالم لأفضل اتصال.</p></div>
+        <div class="feature-card"><div class="feature-icon">🔄</div><h3>نسخ احتياطي</h3><p>نسخ احتياطي تلقائي يومي مع استعادة بنقرة واحدة.</p></div>
+        <div class="feature-card"><div class="feature-icon">🎮</div><h3>لوحة تحكم كاملة</h3><p>تحكم كامل مثل Aternos مع إعدادات متقدمة وإدارة لاعبين.</p></div>
+    </div>
+</section>
+
+<!-- ===== PRICING ===== -->
+<section class="section-box" id="page-pricing">
+    <h2 class="section-title">اختر <span style="background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">باقتك</span></h2>
+    <p class="section-sub">كل الباقات تدعم Java و Bedrock مع إمكانية الترقية</p>
+    <div class="pricing-grid">
+        <div class="pricing-card">
+            <div class="plan-name">مجاني</div>
+            <div class="plan-price">0 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>1 سيرفر (Java أو Bedrock)</li>
+                <li>1 جيجابايت رام</li>
+                <li>10 لاعبين</li>
+                <li>5 جيجابايت مساحة</li>
+                <li>دعم Vanilla / Bedrock</li>
+            </ul>
+            <a class="btn btn-outline" style="width:100%;" onclick="showPage('create')">ابدأ الآن</a>
+        </div>
+        <div class="pricing-card featured">
+            <div class="badge">الأكثر شهرة</div>
+            <div class="plan-name">مميز</div>
+            <div class="plan-price">9.99 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>3 سيرفرات (Java + Bedrock)</li>
+                <li>4 جيجابايت رام</li>
+                <li>غير محدود لاعبين</li>
+                <li>30 جيجابايت مساحة</li>
+                <li>Paper + Spigot + مودات</li>
+                <li>نسخ احتياطي يومي</li>
+            </ul>
+            <a class="btn btn-primary" style="width:100%;">اشترك الآن</a>
+        </div>
+        <div class="pricing-card">
+            <div class="plan-name">احترافي</div>
+            <div class="plan-price">24.99 <span>ريال/شهر</span></div>
+            <ul class="plan-features">
+                <li>10 سيرفرات</li>
+                <li>8 جيجابايت رام</li>
+                <li>غير محدود لاعبين</li>
+                <li>100 جيجابايت مساحة</li>
+                <li>جميع الإصدارات + مودات</li>
+                <li>دعم فني 24/7</li>
+            </ul>
+            <a class="btn btn-outline" style="width:100%;">اشترك الآن</a>
+        </div>
+    </div>
+</section>
+
+<!-- ===== PROFILE ===== -->
+<section class="section-box" id="page-profile">
+    <h2 class="section-title">ملفي الشخصي</h2>
+    <p class="section-sub">معلومات حسابك وإحصائياتك</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;">
+        <div class="form-card" style="text-align:center;">
+            <div class="user-avatar" style="width:80px;height:80px;margin:0 auto 1rem;font-size:2rem;" id="profile-avatar-letter">ض</div>
+            <h3 id="profile-username">مستخدم</h3>
+            <p style="color:var(--text-light);font-size:0.85rem;" id="profile-email">user@email.com</p>
+            <p style="margin-top:1rem;font-size:0.85rem;">🪪 العضو منذ: <span id="profile-joined">2026-06-03</span></p>
+            <p style="font-size:0.85rem;">📋 الخطة: <span id="profile-plan" style="color:var(--secondary);font-weight:600;">مجاني</span></p>
+        </div>
+        <div class="form-card">
+            <h3 style="margin-bottom:1rem;">إحصائيات</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;text-align:center;">
+                <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:1.2rem;"><div style="font-size:1.8rem;font-weight:800;color:var(--secondary);" id="stat-servers">0</div><div style="font-size:0.8rem;color:var(--text-light);">السيرفرات</div></div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:1.2rem;"><div style="font-size:1.8rem;font-weight:800;color:var(--secondary);" id="stat-players">0</div><div style="font-size:0.8rem;color:var(--text-light);">إجمالي اللاعبين</div></div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:1.2rem;"><div style="font-size:1.8rem;font-weight:800;color:var(--secondary);">0</div><div style="font-size:0.8rem;color:var(--text-light);">المودات المثبتة</div></div>
+                <div style="background:rgba(255,255,255,0.03);border-radius:12px;padding:1.2rem;"><div style="font-size:1.8rem;font-weight:800;color:var(--secondary);">0</div><div style="font-size:0.8rem;color:var(--text-light);">ساعات التشغيل</div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="dash-wrap" id="page-dashboard" style="display:none;">
+    <div class="dash-header">
+        <div>
+            <h2>لوحة التحكم</h2>
+            <p style="color:var(--text-light);font-size:0.9rem;">مرحباً بك، يمكنك إدارة سيرفراتك من هنا</p>
+        </div>
+        <a class="btn btn-primary" onclick="showPage('create')">+ سيرفر جديد</a>
+    </div>
+    <div class="dash-tabs">
+        <button class="dash-tab active" onclick="switchDashTab('servers',this)">📦 سيرفراتي</button>
+        <button class="dash-tab" onclick="switchDashTab('backups',this)">💾 النسخ الاحتياطي</button>
+        <button class="dash-tab" onclick="switchDashTab('activity',this)">📋 النشاطات</button>
+    </div>
+    <div class="dash-content show" id="dash-servers">
+        <div class="server-grid" id="server-list"></div>
+        <div id="no-servers" style="text-align:center;padding:4rem 2rem;">
+            <div style="font-size:3rem;margin-bottom:1rem;">🎮</div>
+            <h3>لا يوجد سيرفرات بعد</h3>
+            <p style="color:var(--text-light);margin:0.5rem 0 1.5rem;">ابدأ بإنشاء سيرفرك الأول الآن!</p>
+            <a class="btn btn-primary btn-lg" onclick="showPage('create')">+ إنشاء سيرفر</a>
+        </div>
+    </div>
+    <div class="dash-content" id="dash-backups">
+        <div style="text-align:center;padding:3rem;">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">💾</div>
+            <h3>النسخ الاحتياطي</h3>
+            <p style="color:var(--text-light);">النسخ الاحتياطي التلقائي يتم كل 24 ساعة</p>
+            <div id="backup-list" style="margin-top:1.5rem;text-align:right;"></div>
+        </div>
+    </div>
+    <div class="dash-content" id="dash-activity">
+        <div style="text-align:center;padding:3rem;">
+            <div style="font-size:2.5rem;margin-bottom:1rem;">📋</div>
+            <h3>سجل النشاطات</h3>
+            <p style="color:var(--text-light);">جميع الإجراءات التي قمت بها</p>
+            <div id="activity-list" style="margin-top:1.5rem;text-align:right;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== CREATE ===== -->
+<div class="create-wrap" id="page-create" style="display:none;">
+    <div class="form-card">
+        <h2 style="margin-bottom:1.5rem;text-align:center;">إنشاء سيرفر جديد</h2>
+        <div class="form-group">
+            <label>المنصة</label>
+            <div class="platform-tabs" id="platform-select">
+                <span class="platform-tab java" onclick="selectPlatform('java')">☕ Java Edition</span>
+                <span class="platform-tab bedrock active" onclick="selectPlatform('bedrock')">⬢ Bedrock Edition</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>اسم السيرفر</label>
+            <input type="text" id="server-name-input" placeholder="مثلاً: سيرفر البقاء">
+        </div>
+        <div class="form-group" id="version-group">
+            <label>الإصدار</label>
+            <select id="server-version"></select>
+        </div>
+        <div class="form-group">
+            <label>نوع السيرفر (Software)</label>
+            <select id="server-type"></select>
+        </div>
+        <div class="form-group">
+            <label>بذرة العالم (Seed)</label>
+            <input type="text" id="server-seed" class="seed-input" placeholder="اترك فارغاً لعشوائي">
+        </div>
+        <div class="form-group">
+            <label>الذاكرة (RAM)</label>
+            <div class="slide-container">
+                <span>512MB</span>
+                <input type="range" id="ram-slider" min="512" max="4096" value="1024" step="512" oninput="document.getElementById('ram-value').textContent=this.value+'MB'">
+                <span id="ram-value" class="slide-value">1024MB</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>عدد اللاعبين</label>
+            <div class="slide-container">
+                <span>2</span>
+                <input type="range" id="players-slider" min="2" max="50" value="10" step="1" oninput="document.getElementById('players-value').textContent=this.value">
+                <span id="players-value" class="slide-value">10</span>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="display:flex;align-items:center;gap:0.8rem;">
+                <label style="margin:0;">تشغيل تلقائي</label>
+                <label class="toggle-switch"><input type="checkbox" id="auto-start" checked><span class="toggle-slider"></span></label>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:0.8rem;">
+                <label style="margin:0;">وضع أونلاين</label>
+                <label class="toggle-switch"><input type="checkbox" id="online-mode" checked><span class="toggle-slider"></span></label>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:1.5rem;" onclick="createServer()">🚀 إنشاء السيرفر</button>
+    </div>
+</div>
+
+<!-- ===== SERVER DETAIL ===== -->
+<div class="dash-wrap" id="page-server-detail" style="display:none;">
+    <div class="detail-header">
+        <div>
+            <div class="detail-title" id="detail-title">اسم السيرفر</div>
+            <div style="display:flex;gap:0.8rem;align-items:center;margin-top:0.3rem;flex-wrap:wrap;">
+                <span class="s-addr"><span id="detail-ip">0.0.0.0</span>:<span id="detail-port">25565</span> <span class="copy" onclick="copyIP()">📋</span></span>
+                <span class="s-status online" id="detail-status-badge">متصل</span>
+                <span class="s-badge java" id="detail-platform-badge">Java</span>
+            </div>
+        </div>
+        <div class="s-actions">
+            <button class="btn btn-success btn-sm" id="detail-start-btn" onclick="startServer()">▶ تشغيل</button>
+            <button class="btn btn-danger btn-sm" id="detail-stop-btn" onclick="stopServer()">⏹ إيقاف</button>
+            <button class="btn btn-ghost btn-sm" onclick="showPage('dashboard')">← رجوع</button>
+        </div>
+    </div>
+    <div class="detail-tabs" id="detail-tabs-container">
+        <button class="detail-tab active" onclick="switchDetailTab('settings',this)">⚙️ الإعدادات</button>
+        <button class="detail-tab" onclick="switchDetailTab('players',this)">👥 اللاعبين</button>
+        <button class="detail-tab" onclick="switchDetailTab('mods',this)">🧩 المودات</button>
+        <button class="detail-tab" onclick="switchDetailTab('plugins',this)">🔌 البلقنات</button>
+        <button class="detail-tab" onclick="switchDetailTab('world',this)">🌍 العالم</button>
+        <button class="detail-tab" onclick="switchDetailTab('console',this)">💻 الكونسول</button>
+        <button class="detail-tab" onclick="switchDetailTab('backup',this)">💾 النسخ</button>
+        <button class="detail-tab" onclick="switchDetailTab('access',this)">🔑 صلاحيات</button>
+    </div>
+
+    <!-- Settings tab -->
+    <div class="detail-content show" id="det-settings">
+        <div class="options-grid">
+            <div class="option-card">
+                <label>🥇 وضع اللعبة</label>
+                <div class="desc">وضع اللعب الأساسي</div>
+                <select id="opt-gamemode" onchange="saveSetting('gamemode',this.value)">
+                    <option value="survival">بقاء (Survival)</option>
+                    <option value="creative">إبداعي (Creative)</option>
+                    <option value="adventure">مغامرة (Adventure)</option>
+                    <option value="spectator">مشاهد (Spectator)</option>
+                </select>
+            </div>
+            <div class="option-card">
+                <label>🎯 الصعوبة</label>
+                <div class="desc">مستوى الصعوبة</div>
+                <select id="opt-difficulty" onchange="saveSetting('difficulty',this.value)">
+                    <option value="peaceful">سلمي</option>
+                    <option value="easy">سهل</option>
+                    <option value="normal" selected>عادي</option>
+                    <option value="hard">صعب</option>
+                </select>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>⚔️ PvP</label><div class="desc">السماح بالقتال</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('pvp',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>🔥 انتشار النار</label><div class="desc">Fire Spread</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('fire',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>🌙 دورة اليوم</label><div class="desc">تغير الوقت</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('daylight',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>👻 ظهور الغوغاء</label><div class="desc">Mob Spawning</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('mobs',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>🥚 الغنائم</label><div class="desc">Mob Loot</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('mobloot',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>🧱 تدمير الكتل</label><div class="desc">السماح بالتدمير</div></div>
+                <label class="toggle-switch"><input type="checkbox" checked onchange="saveSetting('blockbreak',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>✈️ الطيران</label><div class="desc">السماح بالطيران</div></div>
+                <label class="toggle-switch"><input type="checkbox" onchange="saveSetting('flight',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card toggle-row">
+                <div><label>📋 القائمة البيضاء</label><div class="desc">Whitelist</div></div>
+                <label class="toggle-switch"><input type="checkbox" onchange="saveSetting('whitelist',this.checked)"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="option-card">
+                <label>📝 رسالة الترحيب (MOTD)</label>
+                <div class="desc">تظهر عند دخول اللاعب</div>
+                <input type="text" id="opt-motd" value="§6§lCloudCraft §r§7- §bBest Free Hosting" onchange="saveSetting('motd',this.value)">
+            </div>
+            <div class="option-card">
+                <label>👤 أقصى عدد لاعبين</label>
+                <input type="number" id="opt-maxplayers" value="10" min="2" max="100" onchange="saveSetting('maxplayers',parseInt(this.value))">
+            </div>
+            <div class="option-card">
+                <label>🔇 وضع الصيانة</label>
+                <div class="desc">منع اللاعبين من الدخول</div>
+                <div style="display:flex;gap:0.5rem;align-items:center;">
+                    <label class="toggle-switch"><input type="checkbox" onchange="saveSetting('maintenance',this.checked)"><span class="toggle-slider"></span></label>
+                    <input type="text" placeholder="رسالة الصيانة..." style="flex:1;padding:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;">
+                </div>
+            </div>
+        </div>
+        <div style="margin-top:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
+            <button class="btn btn-success" onclick="showToast('✅ تم حفظ الإعدادات','success')">💾 حفظ الإعدادات</button>
+            <button class="btn btn-outline" onclick="showToast('تم إعادة تحميل الإعدادات','info')">🔄 إعادة تحميل</button>
+        </div>
+    </div>
+
+    <!-- Players tab -->
+    <div class="detail-content" id="det-players">
+        <div style="display:flex;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <h3>👥 إدارة اللاعبين</h3>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                <button class="btn btn-sm btn-outline" onclick="showAddPlayer('op')">+ أوب (OP)</button>
+                <button class="btn btn-sm btn-outline" onclick="showAddPlayer('whitelist')">+ قائمة بيضاء</button>
+                <button class="btn btn-sm btn-outline" onclick="showAddPlayer('ban')">⛔ حظر</button>
+            </div>
+        </div>
+        <table class="players-table">
+            <thead><tr><th>اللاعب</th><th>الدور</th><th>الحالة</th><th></th></tr></thead>
+            <tbody id="players-table-body">
+                <tr><td colspan="4" style="text-align:center;color:var(--text-light);">لا يوجد لاعبين</td></tr>
+            </tbody>
+        </table>
+        <div class="player-input-row" id="player-input-row" style="display:none;">
+            <input type="text" id="player-name-input" placeholder="اسم اللاعب...">
+            <button class="btn btn-success btn-sm" onclick="addPlayer()">إضافة</button>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('player-input-row').style.display='none'">إلغاء</button>
+        </div>
+    </div>
+
+    <!-- Mods tab -->
+    <div class="detail-content" id="det-mods">
+        <h3>🧩 المودات (Mods)</h3>
+        <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:1rem;">يجب استخدام Forge أو Fabric. اختر المودات المناسبة لإصدارك.</p>
+        <input type="text" class="mod-search" id="mod-search-input" placeholder="🔍 ابحث عن مود..." oninput="filterMods()">
+        <div class="mods-grid" id="mods-grid"></div>
+    </div>
+
+    <!-- Plugins tab -->
+    <div class="detail-content" id="det-plugins">
+        <h3>🔌 البلقنات (Plugins)</h3>
+        <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:1rem;">يجب استخدام Paper أو Spigot. البلقنات تضيف أوامر وميزات للسيرفر.</p>
+        <input type="text" class="mod-search" id="plugin-search-input" placeholder="🔍 ابحث عن بلقن..." oninput="filterPlugins()">
+        <div class="mods-grid" id="plugins-grid"></div>
+    </div>
+
+    <!-- World tab -->
+    <div class="detail-content" id="det-world">
+        <h3>🌍 إدارة العالم</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;">
+            <div class="world-preview">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🌍</div>
+                <h4>العالم الرئيسي</h4>
+                <div class="seed-display" id="world-seed">Seed: 1234567890</div>
+                <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-light);">الحجم: 42.5 MB</div>
+                <div style="margin-top:1rem;">
+                    <button class="btn btn-sm btn-outline" onclick="showToast('جاري إعادة تعيين العالم...','warning')">🔄 إعادة تعيين</button>
+                    <button class="btn btn-sm btn-outline" onclick="showToast('جاري تحميل العالم...','info')">📥 تحميل</button>
+                </div>
+            </div>
+            <div class="world-preview">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">📂</div>
+                <h4>عوالم إضافية</h4>
+                <div style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-light);">لا يوجد عوالم إضافية</div>
+                <button class="btn btn-sm btn-outline" style="margin-top:1rem;" onclick="showToast('جاري إنشاء عالم جديد...','info')">+ عالم جديد</button>
+            </div>
+            <div class="<div class="world-preview">
+                <div style="font-size:3rem;margin-bottom:0.5rem;">🗺️</div>
+                <h4>بذرة جديدة</h4>
+                <input type="text" placeholder="أدخل بذرة جديدة..." style="width:100%;padding:0.5rem;margin-top:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;">
+                <button class="btn btn-sm btn-success" style="margin-top:0.5rem;" onclick="showToast('تم تغيير البذرة','success')">تطبيق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Console tab -->
+    <div class="detail-content" id="det-console">
+        <h3>💻 الكونسول</h3>
+        <div class="console-wrap" style="margin-top:1rem;">
+            <div class="console-view" id="server-console-view">
+                <div class="line"><span class="time">[12:34:56]</span> <span class="info">[CloudCraft] جاري تحميل الكونسول...</span></div>
+            </div>
+            <div class="console-in">
+                <input type="text" id="server-console-input" placeholder="اكتب أمراً..." onkeypress="if(event.key==='Enter')serverConsoleCommand()">
+                <button class="btn btn-primary" onclick="serverConsoleCommand()">إرسال</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup tab -->
+    <div class="detail-content" id="det-backup">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+            <h3>💾 النسخ الاحتياطي</h3>
+            <button class="btn btn-sm btn-primary" onclick="showToast('جاري إنشاء نسخة احتياطية...','info')">➕ نسخة الآن</button>
+        </div>
+        <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:1rem;">يتم إنشاء نسخة احتياطية تلقائياً كل 24 ساعة. يمكنك استعادة أي نسخة بنقرة واحدة.</p>
+        <div id="server-backup-list"></div>
+    </div>
+
+    <!-- Access tab -->
+    <div class="detail-content" id="det-access">
+        <h3>🔑 صلاحيات الوصول</h3>
+        <p style="color:var(--text-light);font-size:0.85rem;margin-bottom:1rem;">شارك الوصول إلى سيرفرك مع مستخدمين آخرين للتحكم به.</p>
+        <div class="option-card" style="margin-bottom:1rem;">
+            <label>إضافة مستخدم للتحكم</label>
+            <div class="desc">أدخل اسم المستخدم لمنحه صلاحية الوصول</div>
+            <div style="display:flex;gap:0.5rem;">
+                <input type="text" placeholder="اسم المستخدم..." style="flex:1;padding:0.5rem;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#fff;">
+                <button class="btn btn-sm btn-primary" onclick="showToast('تم إرسال الدعوة','success')">إضافة</button>
+            </div>
+        </div>
+        <div id="access-list">
+            <div class="backup-item">
+                <div class="b-info"><strong>أنت</strong> <span>(مالك)</span></div>
+                <span class="player-tag op">مالك</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full login page -->
+<div class="login-full-page" id="page-login-full" style="display:none;">
+    <div class="login-full-card">
+        <div class="logo" style="justify-content:center;margin-bottom:0.5rem;"><span class="logo-icon"></span> CloudCraft</div>
+        <p class="sub">منصة استضافة ماين كرافت المجانية</p>
+        <div class="form-group">
+            <label>👤 اسم المستخدم</label>
+            <input type="text" id="full-login-username" placeholder="أدخل اسم المستخدم">
+        </div>
+        <div class="form-group">
+            <label>🔑 كلمة المرور</label>
+            <input type="password" id="full-login-password" placeholder="أدخل كلمة المرور">
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;margin-top:0.5rem;" onclick="fullLogin()">🚀 تسجيل الدخول</button>
+        <div class="dev-credit" style="margin-top:1.5rem;">
+            <p>مطور: <strong style="color:var(--secondary);">يعقوب</strong></p>
+            <p>يوزر تليجرام: <a href="https://t.me/G2_ZB" target="_blank" style="color:var(--accent);font-weight:700;">@G2_ZB</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+<div class="modal-overlay" id="login-modal">
+    <div class="modal">
+        <button class="close-btn" onclick="closeModal('login-modal')">✕</button>
+        <h3>تسجيل الدخول</h3>
+        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="login-email" placeholder="your@email.com"></div>
+        <div class="form-group"><label>كلمة المرور</label><input type="password" id="login-password" placeholder="********"></div>
+        <button class="btn btn-primary" style="width:100%;" onclick="login()">تسجيل الدخول</button>
+        <p style="margin-top:1rem;text-align:center;color:var(--text-light);font-size:0.85rem;">ليس لديك حساب؟ <a href="#" onclick="closeModal('login-modal');showModal('register-modal')" style="color:var(--secondary);">إنشاء حساب</a></p>
+    </div>
+</div>
+
+<div class="modal-overlay" id="register-modal">
+    <div class="modal">
+        <button class="close-btn" onclick="closeModal('register-modal')">✕</button>
+        <h3>إنشاء حساب جديد</h3>
+        <div class="form-group"><label>اسم المستخدم</label><input type="text" id="reg-username" placeholder="اسمك"></div>
+        <div class="form-group"><label>البريد الإلكتروني</label><input type="email" id="reg-email" placeholder="your@email.com"></div>
+        <div class="form-row">
+            <div class="form-group"><label>كلمة المرور</label><input type="password" id="reg-password" placeholder="********"></div>
+            <div class="form-group"><label>تأكيد</label><input type="password" id="reg-password2" placeholder="********"></div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;" onclick="register()">إنشاء حساب</button>
+        <p style="margin-top:1rem;text-align:center;color:var(--text-light);font-size:0.85rem;">لديك حساب؟ <a href="#" onclick="closeModal('register-modal');showModal('login-modal')" style="color:var(--secondary);">تسجيل الدخول</a></p>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 CloudCraft - جميع الحقوق محفوظة. استضافة ماين كرافت مجانية.</p>
+    <div class="dev-credit">
+        <p>المطور: <strong style="color:var(--secondary);">يعقوب</strong> • تليجرام: <a href="https://t.me/G2_ZB" target="_blank" style="color:var(--accent);font-weight:700;">@G2_ZB</a></p>
+    </div>
+    <p style="margin-top:0.5rem;font-size:0.8rem;">
+        <a href="#" style="color:var(--text-light);">سياسة الخصوصية</a> • 
+        <a href="#" style="color:var(--text-light);">شروط الخدمة</a> • 
+        <a href="#" style="color:var(--text-light);">الدعم الفني</a>
+    </p>
+</footer>
+
+<script>
+    // ========== DATA ==========
+    let currentPlatform = 'bedrock';
+    let loggedIn = false;
+    let currentUser = null;
+    let currentServerIndex = -1;
+    let playersData = [];
+    let pendingPlayerType = 'op';
+    let installedMods = [];
+    let installedPlugins = [];
+    let activityLog = [];
+    let backupList = [];
+    let consoleLines = [];
+
+    const modsDatabase = [
+        { name: 'OptiFine', desc: 'تحسين الأداء والرسومات', tag: 'mod', versions: '1.21-1.20' },
+        { name: 'JEI', desc: 'عرض وصفات الصياغة', tag: 'mod', versions: '1.21-1.19' },
+        { name: 'JourneyMap', desc: 'خريطة مصغرة وعالمية', tag: 'mod', versions: '1.21-1.18' },
+        { name: 'Tinkers Construct', desc: 'أدوات وأسلحة قابلة للتخصيص', tag: 'mod', versions: '1.20-1.16' },
+        { name: 'Biomes O Plenty', desc: 'إضافة بيئات حيوية جديدة', tag: 'mod', versions: '1.21-1.18' },
+        { name: 'Create', desc: 'ميكانيكا وآلات متطورة', tag: 'mod', versions: '1.21-1.18' },
+        { name: 'Twilight Forest', desc: 'عالم مغامرات جديد', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Iron Chests', desc: 'صناديق أكبر وأفضل', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Waystones', desc: 'نظام نقل سريع', tag: 'mod', versions: '1.21-1.18' },
+        { name: 'AppleSkin', desc: 'عرض قيمة الشبع', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Xaeros Minimap', desc: 'خريطة مصغرة متطورة', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Ender Storage', desc: 'صناديق إندر مشتركة', tag: 'mod', versions: '1.20-1.16' },
+        { name: 'BuildCraft', desc: 'أنابيب وآلات بناء', tag: 'mod', versions: '1.20-1.12' },
+        { name: 'Applied Energistics 2', desc: 'نظام تخزين رقمي', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Mekanism', desc: 'آلات متطورة وتوليد طاقة', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'MrCrayfish Furniture', desc: 'أثاث وديكورات', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Cooking for Blockheads', desc: 'نظام طبخ متطور', tag: 'mod', versions: '1.21-1.16' },
+        { name: 'Pam HarvestCraft', desc: 'مئات المحاصيل الجديدة', tag: 'mod', versions: '1.20-1.12' },
+        { name: 'Chisel', desc: 'أشكال جديدة للكتل', tag: 'mod', versions: '1.20-1.12' },
+        { name: 'Decocraft', desc: 'ديكورات منزلية', tag: 'mod', versions: '1.20-1.12' },
+    ];
+
+    const pluginsDatabase = [
+        { name: 'EssentialsX', desc: 'حزمة أوامر أساسية كاملة', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'LuckPerms', desc: 'نظام صلاحيات متطور', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'WorldEdit', desc: 'تعديل العالم بسهولة', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'WorldGuard', desc: 'حماية المناطق', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'CoreProtect', desc: 'تسجيل وحماية من التخريب', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'Vault', desc: 'نظام اقتصادي وهمي', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'GriefPrevention', desc: 'حماية الأراضي', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'ChestShop', desc: 'متاجر بين اللاعبين', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'Multiverse-Core', desc: 'إدارة عوالم متعددة', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'Citizens', desc: 'NPCs ومخلوقات مبرمجة', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'PlaceholderAPI', desc: 'مكتبة متغيرات', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'DeluxeChat', desc: 'تخصيص الشات', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'ClearLag', desc: 'تنظيف البنود تلقائياً', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'PlotSquared', desc: 'نظام بقع أرضية', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'HolographicDisplays', desc: 'عرض نصوص ثلاثية الأبعاد', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'BentoBox', desc: 'جزر شبيهة SkyBlock', tag: 'plugin', versions: '1.21-1.16' },
+        { name: 'AdvancedEnchantments', desc: 'سحر متطور', tag: 'plugin', versions: '1.21-1.16' },
+        { name: 'McMMO', desc: 'نظام مهارات RPG', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'JobsReborn', desc: 'نظام وظائف ومكافآت', tag: 'plugin', versions: '1.21-1.8' },
+        { name: 'AuctionHouse', desc: 'نظام مزادات', tag: 'plugin', versions: '1.21-1.8' },
+    ];
+
+    // ========== SERVERS DATA ==========
+    let servers = [];
+
+    // ========== INIT ==========
+    (function() {
+        const bg = document.getElementById('bg');
+        for (let i = 0; i < 20; i++) {
+            const cube = document.createElement('div');
+            cube.className = 'cube';
+            cube.style.left = Math.random() * 100 + '%';
+            cube.style.width = (20 + Math.random() * 30) + 'px';
+            cube.style.height = cube.style.width;
+            cube.style.animationDuration = (15 + Math.random() * 20) + 's';
+            cube.style.animationDelay = (Math.random() * 20) + 's';
+            bg.appendChild(cube);
+        }
+        // Load saved data
+        const saved = localStorage.getItem('cloudcraft_servers');
+        if (saved) servers = JSON.parse(saved);
+        const savedUser = localStorage.getItem('cloudcraft_user');
+        if (savedUser) { currentUser = JSON.parse(savedUser); loggedIn = true; }
+        const savedPlayers = localStorage.getItem('cloudcraft_players');
+        if (savedPlayers) playersData = JSON.parse(savedPlayers);
+        const savedMods = localStorage.getItem('cloudcraft_mods');
+        if (savedMods) installedMods = JSON.parse(savedMods);
+        const savedPlugins = localStorage.getItem('cloudcraft_plugins');
+        if (savedPlugins) installedPlugins = JSON.parse(savedPlugins);
+        const savedActivity = localStorage.getItem('cloudcraft_activity');
+        if (savedActivity) activityLog = JSON.parse(savedActivity);
+        const savedBackups = localStorage.getItem('cloudcraft_backups');
+        if (savedBackups) backupList = JSON.parse(savedBackups);
+        const savedConsole = localStorage.getItem('cloudcraft_console');
+        if (savedConsole) consoleLines = JSON.parse(savedConsole);
+        if (loggedIn) updateUILoggedIn();
+        selectPlatform('bedrock');
+        renderServers();
+        renderMods();
+        renderPlugins();
+        animateNumbers();
+        addConsoleLine('[CloudCraft] ✅ تم تحميل النظام بنجاح', 'info');
+        addConsoleLine('[CloudCraft] ⬢ دعم Java & Bedrock', 'info');
+        addConsoleLine('[CloudCraft] 💡 اكتب help لعرض الأوامر', 'info');
+        renderBackups();
+        renderActivity();
+        renderServerBackups();
+    })();
+
+    // ========== UI HELPERS ==========
+    function animateNumbers() {
+        animateEl('server-count', 15247);
+        animateEl('player-count', 128563);
+    }
+    function animateEl(id, target) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let c = 0;
+        const step = Math.ceil(target/60);
+        const i = setInterval(() => { c += step; if(c>=target){c=target;clearInterval(i);} el.textContent=c.toLocaleString('ar-SA'); }, 30);
+    }
+
+    function showToast(msg, type) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.className = 'toast ' + type;
+        t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000);
+    }
+
+    function showModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('active'); });
+    });
+
+    // User dropdown toggle
+    document.getElementById('user-menu').addEventListener('click', function(e) {
+        e.stopPropagation();
+        document.getElementById('user-dropdown').classList.toggle('show');
+    });
+    document.addEventListener('click', function() {
+        document.getElementById('user-dropdown').classList.remove('show');
+    });
+
+    function showPage(page) {
+        document.querySelectorAll('[id^="page-"]').forEach(el => el.style.display = 'none');
+        if (page === 'home') document.getElementById('page-home').style.display = 'flex';
+        else if (page === 'login-full') { document.getElementById('page-login-full').style.display = 'flex'; }
+        else { const el = document.getElementById('page-' + page); if (el) el.style.display = 'block'; }
+        // nav highlight
+        document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+        const map = { home:0, features:1, pricing:2, dashboard:3 };
+        const links = document.querySelectorAll('.nav-links a');
+        if (map[page] !== undefined) links[map[page]].classList.add('active');
+        if (page === 'dashboard') renderServers();
+        if (page === 'server-detail') {
+            renderDetailPage();
+            renderServerConsole();
+        }
+    }
+
+    function updateUILoggedIn() {
+        if (!currentUser) return;
+        document.getElementById('user-avatar').textContent = currentUser.username.charAt(0).toUpperCase();
+        document.getElementById('user-name').textContent = currentUser.username;
+        document.getElementById('user-menu').classList.add('show');
+        document.getElementById('btn-login').style.display = 'none';
+        document.getElementById('btn-register').style.display = 'none';
+        document.getElementById('nav-dash').style.display = 'block';
+        // profile
+        document.getElementById('profile-avatar-letter').textContent = currentUser.username.charAt(0).toUpperCase();
+        document.getElementById('profile-username').textContent = currentUser.username;
+        document.getElementById('profile-email').textContent = currentUser.email;
+        document.getElementById('profile-joined').textContent = currentUser.joined || '2026-06-03';
+        document.getElementById('profile-plan').textContent = currentUser.plan || 'مجاني';
+        updateStats();
+    }
+
+    function updateStats() {
+        const totalPlayers = servers.reduce((a,s) => a + parseInt(s.players.split('/')[0] || 0), 0);
+        document.getElementById('stat-servers').textContent = servers.length;
+        document.getElementById('stat-players').textContent = totalPlayers;
+    }
+
+    // ========== AUTH ==========
+    function register() {
+        const username = document.getElementById('reg-username').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const pass = document.getElementById('reg-password').value;
+        const pass2 = document.getElementById('reg-password2').value;
+        if (!username || !email || !pass) { showToast('الرجاء ملء جميع الحقول', 'error'); return; }
+        if (pass !== pass2) { showToast('كلمات المرور غير متطابقة', 'error'); return; }
+        if (localStorage.getItem('cloudcraft_user')) { showToast('يوجد حساب مسجل بالفعل', 'error'); return; }
+        currentUser = { username, email, password: pass, plan: 'مجاني', joined: new Date().toISOString().split('T')[0] };
+        localStorage.setItem('cloudcraft_user', JSON.stringify(currentUser));
+        loggedIn = true;
+        closeModal('register-modal');
+        updateUILoggedIn();
+        showToast(`✅ مرحباً ${username}! تم إنشاء الحساب`, 'success');
+        addActivity('إنشاء حساب جديد: ' + username);
+    }
+
+    function login() {
+        const email = document.getElementById('login-email').value.trim();
+        const pass = document.getElementById('login-password').value;
+        const saved = localStorage.getItem('cloudcraft_user');
+        if (!saved) { showToast('لا يوجد حساب. الرجاء إنشاء حساب أولاً', 'error'); return; }
+        const user = JSON.parse(saved);
+        if (user.email !== email || user.password !== pass) { showToast('البريد أو كلمة المرور غير صحيحة', 'error'); return; }
+        currentUser = user;
+        loggedIn = true;
+        closeModal('login-modal');
+        updateUILoggedIn();
+        showToast(`✅ مرحباً بعودتك ${user.username}!`, 'success');
+        addActivity('تسجيل دخول: ' + user.username);
+    }
+
+    function fullLogin() {
+        const username = document.getElementById('full-login-username').value.trim();
+        const pass = document.getElementById('full-login-password').value;
+        if (!username || !pass) { showToast('الرجاء إدخال جميع البيانات', 'error'); return; }
+        const saved = localStorage.getItem('cloudcraft_user');
+        if (saved) {
+            const user = JSON.parse(saved);
+            if (user.username !== username || user.password !== pass) { showToast('بيانات الدخول غير صحيحة', 'error'); return; }
+            currentUser = user;
+        } else {
+            currentUser = { username, email: username+'@cloudcraft.com', password: pass, plan: 'مجاني', joined: new Date().toISOString().split('T')[0] };
+            localStorage.setItem('cloudcraft_user', JSON.stringify(currentUser));
+        }
+        loggedIn = true;
+        updateUILoggedIn();
+        showToast(`✅ مرحباً ${username}!`, 'success');
+        addActivity('دخول عبر صفحة الدخول الكاملة');
+        showPage('home');
+    }
+
+    function logout() {
+        if (!confirm('تأكيد تسجيل الخروج؟')) return;
+        loggedIn = false;
+        currentUser = null;
+        document.getElementById('user-menu').classList.remove('show');
+        document.getElementById('btn-login').style.display = '';
+        document.getElementById('btn-register').style.display = '';
+        document.getElementById('nav-dash').style.display = 'block';
+        showToast('تم تسجيل الخروج', 'info');
+        showPage('home');
+    }
+
+    // ========== PLATFORM ==========
+    function selectPlatform(platform) {
+        currentPlatform = platform;
+        document.querySelectorAll('.platform-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.platform-tab.' + platform).classList.add('active');
+        const v = document.getElementById('server-version');
+        const t = document.getElementById('server-type');
+        if (platform === 'bedrock') {
+            v.innerHTML = '<optgroup label="Bedrock (مستقر)"><option value="1.26.23.01">1.26.23.01 (أحدث)</option><option value="1.26.8">1.26.8</option><option value="1.25.10">1.25.10</option><option value="1.24.50">1.24.50</option><option value="1.23.12">1.23.12</option></optgroup><optgroup label="Bedrock (سابق)"><option value="1.22.15">1.22.15</option><option value="1.21.30">1.21.30</option></optgroup>';
+            t.innerHTML = '<option value="bedrock">Bedrock Server (رسمي)</option><option value="bedrock-pmmp">PocketMine-MP (مودات PHP)</option><option value="bedrock-nukkit">Nukkit (مودات Java)</option>';
+        } else {
+            v.innerHTML = '<optgroup label="Java (أحدث)"><option value="paper-1.21.4">Paper 1.21.4 (موصى به)</option><option value="vanilla-1.21.4">Vanilla 1.21.4</option><option value="spigot-1.21.4">Spigot 1.21.4</option><option value="forge-1.21.4">Forge 1.21.4</option><option value="fabric-1.21.4">Fabric 1.21.4</option></optgroup><optgroup label="Java (مستقر)"><option value="paper-1.20.4">Paper 1.20.4</option><option value="vanilla-1.20.4">Vanilla 1.20.4</option><option value="paper-1.19.4">Paper 1.19.4</option><option value="paper-1.18.2">Paper 1.18.2</option><option value="paper-1.16.5">Paper 1.16.5</option></optgroup>';
+            t.innerHTML = '<option value="paper">Paper (موصى به)</option><option value="vanilla">Vanilla (أصلي)</option><option value="spigot">Spigot</option><option value="forge">Forge (مودات)</option><option value="fabric">Fabric (مودات)</option>';
+        }
+    }
+
+    // ========== DASHBOARD TABS ==========
+    function switchDashTab(tab, el) {
+        document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.dash-content').forEach(c => c.classList.remove('show'));
+        el.classList.add('active');
+        document.getElementById('dash-' + tab).classList.add('show');
+    }
+
+    function switchDetailTab(tab, el) {
+        document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.detail-content').forEach(c => c.classList.remove('show'));
+        el.classList.add('active');
+        document.getElementById('det-' + tab).classList.add('show');
+    }
+
+    // ========== SERVERS ==========
+    function renderServers() {
+        const container = document.getElementById('server-list');
+        if (!container) return;
+        const no = document.getElementById('no-servers');
+        if (servers.length === 0) {
+            container.innerHTML = '';
+            if (no) no.style.display = 'block';
+            return;
+        }
+        if (no) no.style.display = 'none';
+        container.innerHTML = servers.map((s, i) => `
+            <div class="server-card" onclick="openServerDetail(${i})" style="cursor:pointer;">
+                <div class="s-top">
+                    <div>
+                        <div class="s-name">${s.name}</div>
+                        <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.3rem;flex-wrap:wrap;">
+                            <span class="s-badge ${s.platform}">${s.platform === 'bedrock' ? '⬢ Bedrock' : '☕ Java'}</span>
+                            <span class="s-status ${s.status}">${s.status === 'online' ? '🟢 متصل' : s.status === 'starting' ? '🟡 يبدأ' : '🔴 متوقف'}</span>
+                            <span class="s-addr">${s.ip || 'play.cloudcraft.com'}:${s.port || '25565'}</span>
+                        </div>
+                    </div>
+                    <div style="text-align:left;">
+                        <div style="font-size:0.75rem;color:var(--text-light);">${s.version}</div>
+                    </div>
+                </div>
+                <div class="s-info">
+                    <span>👥 ${s.players || '0/10'}</span>
+                    <span>💾 ${s.ram || '1GB'}</span>
+                    <span>🌍 ${s.seed ? 'Seed: '+s.seed : 'عشوائي'}</span>
+                </div>
+                <div class="s-actions" onclick="event.stopPropagation()">
+                    <button class="btn ${s.status === 'online' ? 'btn-danger' : 'btn-success'} btn-sm" onclick="toggleServer(${i})">${s.status === 'online' ? '⏹ إيقاف' : '▶ تشغيل'}</button>
+                    <button class="btn btn-ghost btn-sm" onclick="openServerDetail(${i})">⚙️ إدارة</button>
+                    <button class="btn btn-ghost btn-sm" style="color:var(--danger);" onclick="deleteServer(${i})">🗑️ حذف</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleServer(i) {
+        if (servers[i].status === 'offline') {
+            showQueue(i);
+        } else {
+            servers[i].status = 'offline';
+            saveServers();
+            renderServers();
+            addConsoleLine(`[CloudCraft] ⏹️ تم إيقاف: ${servers[i].name}`, 'warn');
+            showToast(`⏹️ تم إيقاف ${servers[i].name}`, 'info');
+            addActivity(`إيقاف السيرفر: ${servers[i].name}`);
+        }
+    }
+
+    function showQueue(i) {
+        document.getElementById('queue-overlay').classList.add('active');
+        let pos = 1;
+        const interval = setInterval(() => {
+            pos += Math.floor(Math.random() * 2);
+            document.getElementById('queue-position').textContent = pos;
+            if (pos >= 5) {
+                clearInterval(interval);
+                document.getElementById('queue-overlay').classList.remove('active');
+                servers[i].status = 'online';
+                saveServers();
+                renderServers();
+                addConsoleLine(`[CloudCraft] ✅ تم تشغيل: ${servers[i].name}`, 'info');
+                showToast(`✅ تم تشغيل ${servers[i].name}`, 'success');
+                addActivity(`تشغيل السيرفر: ${servers[i].name}`);
+                if (i === currentServerIndex) renderDetailPage();
+            }
+        }, 800);
+    }
+
+    function deleteServer(i) {
+        if (!confirm(`هل أنت متأكد من حذف "${servers[i].name}"؟`)) return;
+        const n = servers[i].name;
+        servers.splice(i, 1);
+        saveServers();
+        renderServers();
+        addConsoleLine(`[CloudCraft] 🗑️ تم حذف: ${n}`, 'warn');
+        showToast(`تم حذف "${n}"`, 'info');
+        addActivity(`حذف السيرفر: ${n}`);
+        if (currentServerIndex === i) showPage('dashboard');
+    }
+
+    function createServer() {
+        const name = document.getElementById('server-name-input').value.trim();
+        if (!name) { showToast('الرجاء إدخال اسم للسيرفر', 'error'); return; }
+        const version = document.getElementById('server-version').value;
+        const type = document.getElementById('server-type').value;
+        const ram = document.getElementById('ram-slider').value;
+        const players = document.getElementById('players-slider').value;
+        const seed = document.getElementById('server-seed').value.trim();
+        const autoStart = document.getElementById('auto-start').checked;
+        const online = document.getElementById('online-mode').checked;
+        const ip = `play.cloudcraft.com`;
+        const port = currentPlatform === 'bedrock' ? '19132' : '25565';
+        const s = {
+            name, platform: currentPlatform, version, type, ram: ram+'MB',
+            players: '0/'+players, seed: seed || 'عشوائي', status: autoStart ? 'online' : 'offline',
+            ip, port, online, created: new Date().toISOString()
+        };
+        servers.push(s);
+        saveServers();
+        renderServers();
+        addConsoleLine(`[CloudCraft] ✅ تم إنشاء "${name}"`, 'info');
+        showToast(`✅ تم إنشاء ${name}!`, 'success');
+        addActivity(`إنشاء سيرفر جديد: ${name}`);
+        document.getElementById('server-name-input').value = '';
+        document.getElementById('server-seed').value = '';
+        if (autoStart) showQueue(servers.length - 1);
+        showPage('dashboard');
+    }
+
+    // ========== SERVER DETAIL ==========
+    function openServerDetail(i) {
+        currentServerIndex = i;
+        showPage('server-detail');
+        renderDetailPage();
+    }
+
+    function renderDetailPage() {
+        const s = servers[currentServerIndex];
+        if (!s) { showPage('dashboard'); return; }
+        document.getElementById('detail-title').textContent = s.name;
+        document.getElementById('detail-ip').textContent = s.ip || 'play.cloudcraft.com';
+        document.getElementById('detail-port').textContent = s.port || '25565';
+        const badge = document.getElementById('detail-status-badge');
+        badge.textContent = s.status === 'online' ? '🟢 متصل' : s.status === 'starting' ? '🟡 يبدأ' : '🔴 متوقف';
+        badge.className = 's-status ' + s.status;
+        const pbadge = document.getElementById('detail-platform-badge');
+        pbadge.textContent = s.platform === 'bedrock' ? '⬢ Bedrock' : '☕ Java';
+        pbadge.className = 's-badge ' + s.platform;
+        document.getElementById('detail-start-btn').style.display = s.status === 'online' ? 'none' : 'inline-block';
+        document.getElementById('detail-stop-btn').style.display = s.status === 'online' ? 'inline-block' : 'none';
+        document.getElementById('opt-maxplayers').value = s.players ? s.players.split('/')[1] : '10';
+        document.getElementById('world-seed').textContent = 'Seed: ' + (s.seed || 'عشوائي');
+        // Load options from saved settings
+        const settings = JSON.parse(localStorage.getItem('cloudcraft_settings_' + currentServerIndex) || '{}');
+        if (settings.gamemode) document.getElementById('opt-gamemode').value = settings.gamemode;
+        if (settings.difficulty) document.getElementById('opt-difficulty').value = settings.difficulty;
+        if (settings.motd) document.getElementById('opt-motd').value = settings.motd;
+        if (settings.maxplayers) document.getElementById('opt-maxplayers').value = settings.maxplayers;
+        renderServerPlayers();
+        renderServerBackups();
+    }
+
+    function saveSetting(key, value) {
+        const key2 = 'cloudcraft_settings_' + currentServerIndex;
+        const settings = JSON.parse(localStorage.getItem(key2) || '{}');
+        settings[key] = value;
+        localStorage.setItem(key2, JSON.stringify(settings));
+        showToast(`✅ تم حفظ ${key}`, 'success');
+    }
+
+    function startServer() {
+        if (currentServerIndex < 0) return;
+        if (servers[currentServerIndex].status === 'offline') {
+            showQueue(currentServerIndex);
+        }
+    }
+
+    function stopServer() {
+        if (currentServerIndex < 0) return;
+        servers[currentServerIndex].status = 'offline';
+        saveServers();
+        renderDetailPage();
+        renderServers();
+        addConsoleLine(`[CloudCraft] ⏹️ تم إيقاف السيرفر`, 'warn');
+        showToast('⏹️ تم الإيقاف', 'info');
+        addActivity(`إيقاف السيرفر: ${servers[currentServerIndex].name}`);
+    }
+
+    function copyIP() {
+        const s = servers[currentServerIndex];
+        if (!s) return;
+        const text = `${s.ip || 'play.cloudcraft.com'}:${s.port || '25565'}`;
+        navigator.clipboard.writeText(text).then(() => showToast('📋 تم نسخ العنوان', 'success'));
+    }
+
+    // ========== PLAYERS ==========
+    function showAddPlayer(type) {
+        pendingPlayerType = type;
+        document.getElementById('player-input-row').style.display = 'flex';
+        document.getElementById('player-name-input').focus();
+    }
+
+    function addPlayer() {
+        const name = document.getElementById('player-name-input').value.trim();
+        if (!name) { showToast('أدخل اسم اللاعب', 'error'); return; }
+        playersData.push({ name, role: pendingPlayerType });
+        localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+        document.getElementById('player-name-input').value = '';
+        document.getElementById('player-input-row').style.display = 'none';
+        renderServerPlayers();
+        showToast(`✅ تم إضافة ${name} كـ ${pendingPlayerType === 'op' ? 'أوب' : pendingPlayerType === 'whitelist' ? 'قائمة بيضاء' : 'محظور'}`, 'success');
+        addActivity(`إضافة لاعب ${name} - ${pendingPlayerType}`);
+    }
+
+    function renderServerPlayers() {
+        const tbody = document.getElementById('players-table-body');
+        if (!tbody) return;
+        if (playersData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-light);">لا يوجد لاعبين</td></tr>';
+            return;
+        }
+        tbody.innerHTML = playersData.map((p, i) => `
+            <tr>
+                <td><strong>${p.name}</strong></td>
+                <td><span class="player-tag ${p.role}">${p.role === 'op' ? 'أوب' : p.role === 'whitelist' ? 'قائمة بيضاء' : 'محظور'}</span></td>
+                <td><span style="color:var(--success);">✅ نشط</span></td>
+                <td><button class="btn btn-sm btn-ghost" style="color:var(--danger);" onclick="removePlayer(${i})">✕</button></td>
+            </tr>
+        `).join('');
+    }
+
+    function removePlayer(i) {
+        const n = playersData[i].name;
+        playersData.splice(i, 1);
+        localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+        renderServerPlayers();
+        showToast(`تم إزالة ${n}`, 'info');
+    }
+
+    // ========== MODS ==========
+    function renderMods(filter) {
+        const grid = document.getElementById('mods-grid');
+        if (!grid) return;
+        const list = filter ? modsDatabase.filter(m => m.name.toLowerCase().includes(filter.toLowerCase())) : modsDatabase;
+        grid.innerHTML = list.map(m => {
+            const installed = installedMods.includes(m.name);
+            return `<div class="mod-card" onclick="toggleMod('${m.name}')">
+                ${installed ? '<span class="m-installed">✓ مثبت</span>' : ''}
+                <div class="m-name">${m.name}</div>
+                <div class="m-desc">${m.desc}</div>
+                <span class="m-tag ${m.tag}">${m.tag === 'mod' ? 'مود' : 'بلقن'}</span>
+                <span style="font-size:0.65rem;color:var(--text-light);margin-right:0.3rem;">${m.versions}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function filterMods() {
+        const v = document.getElementById('mod-search-input').value;
+        renderMods(v);
+    }
+
+    function toggleMod(name) {
+        const idx = installedMods.indexOf(name);
+        if (idx >= 0) { installedMods.splice(idx, 1); showToast(`إزالة ${name}`, 'info'); }
+        else { installedMods.push(name); showToast(`✅ تم تثبيت ${name}`, 'success'); addActivity(`تثبيت مود: ${name}`); }
+        localStorage.setItem('cloudcraft_mods', JSON.stringify(installedMods));
+        renderMods(document.getElementById('mod-search-input').value);
+    }
+
+    // ========== PLUGINS ==========
+    function renderPlugins(filter) {
+        const grid = document.getElementById('plugins-grid');
+        if (!grid) return;
+        const list = filter ? pluginsDatabase.filter(p => p.name.toLowerCase().includes(filter.toLowerCase())) : pluginsDatabase;
+        grid.innerHTML = list.map(p => {
+            const installed = installedPlugins.includes(p.name);
+            return `<div class="mod-card" onclick="togglePlugin('${p.name}')">
+                ${installed ? '<span class="m-installed">✓ مثبت</span>' : ''}
+                <div class="m-name">${p.name}</div>
+                <div class="m-desc">${p.desc}</div>
+                <span class="m-tag plugin">بلقن</span>
+                <span style="font-size:0.65rem;color:var(--text-light);margin-right:0.3rem;">${p.versions}</span>
+            </div>`;
+        }).join('');
+    }
+
+    function filterPlugins() {
+        const v = document.getElementById('plugin-search-input').value;
+        renderPlugins(v);
+    }
+
+    function togglePlugin(name) {
+        const idx = installedPlugins.indexOf(name);
+        if (idx >= 0) { installedPlugins.splice(idx, 1); showToast(`إزالة ${name}`, 'info'); }
+        else { installedPlugins.push(name); showToast(`✅ تم تثبيت ${name}`, 'success'); addActivity(`تثبيت بلقن: ${name}`); }
+        localStorage.setItem('cloudcraft_plugins', JSON.stringify(installedPlugins));
+        renderPlugins(document.getElementById('plugin-search-input').value);
+    }
+
+    // ========== CONSOLE ==========
+    function addConsoleLine(text, type) {
+        const c = document.getElementById('console');
+        if (c) {
+            const t = new Date().toLocaleTimeString('ar-SA');
+            const l = document.createElement('div'); l.className = 'line';
+            l.innerHTML = '<span class="time">['+t+']</span> <span class="'+type+'">'+text+'</span>';
+            c.appendChild(l); c.scrollTop = c.scrollHeight;
+        }
+        consoleLines.push({ text, type, time: new Date().toISOString() });
+        localStorage.setItem('cloudcraft_console', JSON.stringify(consoleLines));
+        // Also add to server console if viewing
+        renderServerConsole();
+    }
+
+    function serverConsoleCommand() {
+        const input = document.getElementById('server-console-input');
+        const cmd = input.value.trim();
+        if (!cmd) return;
+        const view = document.getElementById('server-console-view');
+        const t = new Date().toLocaleTimeString('ar-SA');
+        const l = document.createElement('div'); l.className = 'line';
+        l.innerHTML = '<span class="time">['+t+']</span> <span class="warn">$ '+cmd+'</span>';
+        view.appendChild(l); view.scrollTop = view.scrollHeight;
+        // Handle commands
+        if (cmd === 'help') {
+            addServerConsoleLine('الأوامر المتاحة: help, list, stop, start, say <msg>, op <player>, deop <player>, whitelist add <player>, ban <player>', 'info');
+        } else if (cmd === 'list') {
+            addServerConsoleLine('اللاعبون المتصلون: ' + playersData.filter(p => true).map(p => p.name).join(', ') || 'لا يوجد لاعبين', 'info');
+        } else if (cmd === 'stop') {
+            addServerConsoleLine('[Server] جاري إيقاف السيرفر...', 'warn');
+            if (currentServerIndex >= 0) {
+                servers[currentServerIndex].status = 'offline'; saveServers(); renderDetailPage(); renderServers();
+            }
+            addServerConsoleLine('[Server] ✅ تم الإيقاف', 'info');
+        } else if (cmd === 'start') {
+            if (currentServerIndex >= 0 && servers[currentServerIndex].status === 'offline') showQueue(currentServerIndex);
+        } else if (cmd.startsWith('say ')) {
+            addServerConsoleLine('[Server] ' + cmd.replace('say ', ''), 'info');
+        } else if (cmd.startsWith('op ')) {
+            const name = cmd.replace('op ', '');
+            playersData.push({ name, role: 'op' });
+            localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+            addServerConsoleLine(`[Server] تم منح الأوب لـ ${name}`, 'info');
+            renderServerPlayers();
+        } else if (cmd.startsWith('deop ')) {
+            const name = cmd.replace('deop ', '');
+            const idx = playersData.findIndex(p => p.name === name && p.role === 'op');
+            if (idx >= 0) { playersData.splice(idx, 1); addServerConsoleLine(`[Server] تم سحب الأوب من ${name}`, 'info'); }
+            localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+            renderServerPlayers();
+        } else if (cmd.startsWith('whitelist add ')) {
+            const name = cmd.replace('whitelist add ', '');
+            playersData.push({ name, role: 'whitelist' });
+            localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+            addServerConsoleLine(`[Server] تم إضافة ${name} للقائمة البيضاء`, 'info');
+            renderServerPlayers();
+        } else if (cmd.startsWith('ban ')) {
+            const name = cmd.replace('ban ', '');
+            playersData.push({ name, role: 'ban' });
+            localStorage.setItem('cloudcraft_players', JSON.stringify(playersData));
+            addServerConsoleLine(`[Server] تم حظر ${name}`, 'info');
+            renderServerPlayers();
+        } else if (cmd === 'seed') {
+            const s = servers[currentServerIndex];
+            addServerConsoleLine('[Server] Seed: ' + (s ? s.seed : 'عشوائي'), 'info');
+        } else {
+            addServerConsoleLine('❌ أمر غير معروف. اكتب help', 'error');
+        }
+        input.value = '';
+    }
+
+    function addServerConsoleLine(text, type) {
+        const view = document.getElementById('server-console-view');
+        if (!view) return;
+        const t = new Date().toLocaleTimeString('ar-SA');
+        const l = document.createElement('div'); l.className = 'line';
+        l.innerHTML = '<span class="time">['+t+']</span> <span class="'+type+'">'+text+'</span>';
+        view.appendChild(l); view.scrollTop = view.scrollHeight;
+    }
+
+    function renderServerConsole() {
+        const view = document.getElementById('server-console-view');
+        if (!view) return;
+        view.innerHTML = '';
+        consoleLines.slice(-50).forEach(cl => {
+            const t = new Date(cl.time).toLocaleTimeString('ar-SA');
+            const l = document.createElement('div'); l.className = 'line';
+            l.innerHTML = '<span class="time">['+t+']</span> <span class="'+cl.type+'">'+cl.text+'</span>';
+            view.appendChild(l);
+        });
+        view.scrollTop = view.scrollHeight;
+    }
+
+    // ========== ACTIVITY ==========
+    function addActivity(text) {
+        activityLog.push({ text, time: new Date().toISOString() });
+        if (activityLog.length > 50) activityLog.shift();
+        localStorage.setItem('cloudcraft_activity', JSON.stringify(activityLog));
+        renderActivity();
+    }
+
+    function renderActivity() {
+        const list = document.getElementById('activity-list');
+        if (!list) return;
+        if (activityLog.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-light);">لا توجد نشاطات بعد</p>';
+            return;
+        }
+        list.innerHTML = activityLog.slice(-10).reverse().map(a =>
+            `<div class="backup-item"><div class="b-info">${a.text} <span>${new Date(a.time).toLocaleString('ar-SA')}</span></div></div>`
+        ).join('');
+    }
+
+    // ========== BACKUPS ==========
+    function renderBackups() {
+        const list = document.getElementById('backup-list');
+        if (!list) return;
+        if (backupList.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-light);">لا توجد نسخ احتياطية بعد. سيتم إنشاء أول نسخة خلال 24 ساعة.</p>';
+            // Create a demo backup
+            setTimeout(() => {
+                backupList.push({ name: 'تلقائي', size: '42.5 MB', date: new Date().toISOString() });
+                localStorage.setItem('cloudcraft_backups', JSON.stringify(backupList));
+                renderBackups();
+            }, 2000);
+            return;
+        }
+        list.innerHTML = backupList.map(b =>
+            `<div class="backup-item">
+                <div class="b-info"><strong>${b.name}</strong> <span>${b.size} • ${new Date(b.date).toLocaleDateString('ar-SA')}</span></div>
+                <button class="btn btn-sm btn-success" onclick="showToast('جاري استعادة النسخة...','warning')">🔄 استعادة</button>
+            </div>`
+        ).join('');
+    }
+
+    function renderServerBackups() {
+        const list = document.getElementById('server-backup-list');
+        if (!list) return;
+        if (backupList.length === 0) {
+            list.innerHTML = '<p style="color:var(--text-light);">لا توجد نسخ احتياطية</p>';
+            return;
+        }
+        list.innerHTML = backupList.map(b =>
+            `<div class="backup-item">
+                <div class="b-info"><strong>${b.name}</strong> <span>${b.size} • ${new Date(b.date).toLocaleDateString('ar-SA')}</span></div>
+                <div style="display:flex;gap:0.3rem;">
+                    <button class="btn btn-sm btn-success" onclick="showToast('جاري الاستعادة...','warning')">🔄 استعادة</button>
+                    <button class="btn btn-sm btn-ghost" onclick="showToast('تم التحميل','info')">📥 تحميل</button>
+                </div>
+            </div>`
+        ).join('');
+    }
+
+    // ========== SAVE HELPERS ==========
+    function saveServers() {
+        localStorage.setItem('cloudcraft_servers', JSON.stringify(servers));
+    }
+
+    // ========== RESTORE DASHBOARD COMMAND ==========
+    function sendCommand() {
+        const input = document.getElementById('console-command');
+        const cmd = input.value.trim();
+        if (!cmd) return;
+        addConsoleLine('$ ' + cmd, 'warn');
+        if (cmd === 'help') {
+            addConsoleLine('الأوامر: help, list, status, start <name>, stop <name>, platforms, stats', 'info');
+        } else if (cmd === 'list') {
+            servers.forEach(s => addConsoleLine('  '+(s.platform==='bedrock'?'⬢':'☕')+' '+s.name+' - '+(s.status==='online'?'🟢 متصل':'🔴 متوقف'), 'info'));
+        } else if (cmd === 'status') {
+            const on = servers.filter(s=>s.status==='online').length;
+            addConsoleLine('🟢 السيرفرات: '+servers.length+' | النشطة: '+on+' | المتوقفة: '+(servers.length-on), 'info');
+        } else if (cmd === 'platforms') {
+            addConsoleLine('⬢ Bedrock - يدعم 1.26.23.01', 'info');
+            addConsoleLine('☕ Java - يدعم Paper/Spigot/Forge/Fabric', 'info');
+        } else if (cmd === 'stats') {
+            addConsoleLine(`إجمالي المودات المثبتة: ${installedMods.length}`, 'info');
+            addConsoleLine(`إجمالي البلقنات المثبتة: ${installedPlugins.length}`, 'info');
+            addConsoleLine(`إجمالي اللاعبين المسجلين: ${playersData.length}`, 'info');
+        } else if (cmd.startsWith('start ')) {
+            const n = cmd.replace('start ','');
+            const idx = servers.findIndex(x => x.name === n);
+            if(idx >= 0) { showQueue(idx); }
+            else addConsoleLine('❌ السيرفر "'+n+'" غير موجود','error');
+        } else if (cmd.startsWith('stop ')) {
+            const n = cmd.replace('stop ','');
+            const idx = servers.findIndex(x => x.name === n);
+            if(idx >= 0) { servers[idx].status='offline'; saveServers(); renderServers(); addConsoleLine('✅ '+n+' تم الإيقاف','info'); showToast('⏹️ تم إيقاف '+n,'info'); addActivity(`إيقاف: ${n}`); }
+            else addConsoleLine('❌ السيرفر "'+n+'" غير موجود','error');
+        } else addConsoleLine('❌ أمر غير معروف: '+cmd+' - اكتب help', 'error');
+        input.value = '';
+    }
+
+    // ========== Run initial renders ==========
+    renderServers();
+    renderMods();
+    renderPlugins();
+    renderBackups();
+    renderActivity();
+    renderServerBackups();
+
+    // Auto-save periodically
+    setInterval(saveServers, 30000);
+</script>
+
+</body>
+</html>
